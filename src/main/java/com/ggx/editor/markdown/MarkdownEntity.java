@@ -1,50 +1,51 @@
 package com.ggx.editor.markdown;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import com.ggx.editor.utils.FileReadUtil;
+
+import java.io.IOException;
 
 public class MarkdownEntity {
 
-    public static String TAG_WIDTH = "<style type=\"text/css\"> %s { width:85%%} </style>";
+    private static String TAG_WIDTH = "<style type=\"text/css\"> %s { width:85%%} </style>";
 
     // css 样式
     private String css;
+    private StringBuilder script;
 
-    // 最外网的div标签， 可以用来设置样式，宽高，字体等
-    private Map<String, String> divStyle = new ConcurrentHashMap<>();
 
     // 转换后的html文档
     private String html;
 
-    public MarkdownEntity() {
-    }
 
     public MarkdownEntity(String html) {
         this.html = html;
+        script=new StringBuilder();
+        addScript("<script type=\"text/javascript\" src=\"http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default\"></script>");
+        addScript("<script>window.onload=function(){window.scrollTo(0,document.body.scrollHeight);}</script>");
+        try {
+            css = FileReadUtil.readAll(ClassLoader.getSystemResourceAsStream("md/huimarkdown"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public String toString() {
-        return css + "\n<div " + parseDiv() + ">\n" + html + "\n</div>";
+        StringBuilder sb=new StringBuilder("<!DOCTYPE html>\n");
+        sb.append("<html>").append("\n");
+        sb.append("<head>").append("\n");
+        sb.append("<style>").append("\n");
+        sb.append(css);
+        sb.append("</style>").append("\n");
+        sb.append(script.toString());
+        sb.append("</head>").append("\n");
+        sb.append("<body class=\"markdown-body\">").append("\n");
+        sb.append(html);
+        sb.append("</body>").append("\n");
+        sb.append("</html>").append("\n");
+        return sb.toString();
     }
 
-
-    private String parseDiv() {
-        StringBuilder builder = new StringBuilder();
-        for (Map.Entry<String, String> entry : divStyle.entrySet()) {
-            builder.append(entry.getKey()).append("=\"").append(entry.getValue()).append("\" ");
-        }
-        return builder.toString();
-    }
-
-
-    public void addDivStyle(String attrKey, String value) {
-        if (divStyle.containsKey(attrKey)) {
-            divStyle.put(attrKey, divStyle.get(attrKey) + " " + value);
-        } else {
-            divStyle.put(attrKey, value);
-        }
-    }
 
 
     public void addWidthCss(String tag) {
@@ -52,7 +53,7 @@ public class MarkdownEntity {
         css += wcss;
     }
 
-    public void setCss(String css){
-        this.css=css;
+    public void addScript(String stript){
+        this.script.append(stript).append("\n");
     }
 }

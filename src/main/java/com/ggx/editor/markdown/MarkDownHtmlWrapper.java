@@ -19,20 +19,6 @@ import java.util.stream.Collectors;
 
 public class MarkDownHtmlWrapper {
 
-    public static String MD_CSS = null;
-
-    static {
-        try {
-            MD_CSS = FileReadUtil.readAll(ClassLoader.getSystemResourceAsStream("md/huimarkdown"));
-            MD_CSS = "<style type=\"text/css\">\n" + MD_CSS + "\n</style>\n";
-            MD_CSS+="<script>window.onload=function(){window.scrollTo(0,document.body.scrollHeight);}</script>";
-        } catch (Exception e) {
-            e.printStackTrace();
-            MD_CSS = "";
-        }
-    }
-
-
     /**
      * 将本地的markdown文件，转为html文档输出
      *
@@ -80,11 +66,7 @@ public class MarkDownHtmlWrapper {
      */
     public static MarkdownEntity ofContent(String content) {
         String html = parse(content);
-        MarkdownEntity entity = new MarkdownEntity(html);
-        entity.setCss(MD_CSS);
-        entity.addDivStyle("class", "markdown-body ");
-        String script="";
-        return entity;
+        return new MarkdownEntity(html);
     }
 
 

@@ -29,9 +29,9 @@ public class TextFieldTreeCellImpl extends TreeCell<File> {
         createDirMenu(dirMenu);
         createFileMenu(fileMenu);
         EventStreams.eventsOf(this,MouseEvent.MOUSE_CLICKED)
-                .filter(mouseEvent -> !getItem().isDirectory()&&mouseEvent.getButton()==MouseButton.PRIMARY)
+                .filter(mouseEvent -> getItem()!=null&&!getItem().isDirectory()&&mouseEvent.getButton()==MouseButton.PRIMARY)
                 .subscribe(mouseEvent -> {
-                    if(action!=null){
+                    if(action!=null&&getItem()!=null){
                         action.openFile(getItem());
                     }
                 });

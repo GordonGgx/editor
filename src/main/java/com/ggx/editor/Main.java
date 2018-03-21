@@ -23,10 +23,12 @@ import javafx.stage.Stage;
 
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Main extends Application{
 
-
+    private ExecutorService executor;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -35,9 +37,16 @@ public class Main extends Application{
         Parent root=loader.load();
         MainController controller=loader.getController();
         controller.setStage(primaryStage);
+        executor=Executors.newSingleThreadExecutor();
+        controller.setExecutor(executor);
         Scene scene=new Scene(root);
         scene.setFill(Color.GHOSTWHITE);
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    @Override
+    public void stop() throws Exception {
+        executor.shutdown();
     }
 }

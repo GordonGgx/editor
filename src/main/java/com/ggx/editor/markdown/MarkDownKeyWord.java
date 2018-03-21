@@ -36,9 +36,8 @@ public class MarkDownKeyWord {
                     + "|(?<COMMENT>" + COMMENT_PATTERN + ")"
     );
 
-    private ExecutorService executor= Executors.newSingleThreadExecutor();
 
-    private Task<StyleSpans<Collection<String>>> computeHighlightingAsync(CodeArea area) {
+    public static Task<StyleSpans<Collection<String>>> computeHighlightingAsync(ExecutorService executor,CodeArea area) {
         String text = area.getText();
         Task<StyleSpans<Collection<String>>> task = new Task<StyleSpans<Collection<String>>>() {
             @Override
