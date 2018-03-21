@@ -86,12 +86,13 @@ public class MainController implements Initializable, TreeListAction {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        webView.getEngine().setJavaScriptEnabled(true);
         codeArea=new CodeArea();
         codeArea.setStyle("-fx-font-size:16");
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
         codeArea.richChanges()
                 .filter(ch -> !ch.getInserted().equals(ch.getRemoved())) // XXX
-                .successionEnds(Duration.ofMillis(500))
+                .successionEnds(Duration.ofMillis(1000))
                 .supplyTask(()-> MarkDownKeyWord.computeHighlightingAsync(executor,codeArea))
                 .awaitLatest(codeArea.richChanges())
                 .filterMap(t -> {
