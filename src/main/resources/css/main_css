@@ -1,0 +1,103 @@
+
+.tree-view{
+    -fx-border-color:transparent;
+    -fx-background-insets: 0;
+}
+.tree-cell .text-field{
+    -fx-border-color:transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-background-color:#D3D3D3;
+}
+
+.tree-cell:selected{
+    -fx-background-color:#D3D3D3;
+}
+
+.split-pane .split-pane-divider {
+    -fx-border-color: transparent;
+    -fx-border-width: 0.01;
+    -fx-background-color: #c0c0c0;
+    -fx-padding:0;
+}
+#welcome{
+    -fx-font-size:30;
+}
+
+.virtualized-scroll-pane{
+    -fx-background-color:white;
+}
+.scroll-bar{
+    -fx-background-color:transparent;
+}
+/*.scroll-bar:hover{
+    -fx-background-color:derive(rgb(232,232,232,0.9),30%)
+}*/
+
+
+.scroll-bar:vertical .decrement-button,
+.scroll-bar:vertical .increment-button{
+     	-fx-background-color:transparent;
+    	-fx-background-radius: 0em;
+     	-fx-padding:2;
+}
+.scroll-bar:horizontal .decrement-button,
+.scroll-bar:horizontal .increment-button{
+    -fx-background-color:transparent;
+    -fx-background-radius: 0em;
+    -fx-padding:2;
+}
+/*#E8E8E8*/
+.scroll-bar:vertical .thumb,
+.scroll-bar:horizontal .thumb{
+     -fx-background-color:#E8E8E8;
+     -fx-background-insets: 2, 0, 0;
+     -fx-background-radius: 0;
+
+ }
+.scroll-bar:horizontal .track,
+.scroll-bar:vertical .track{
+    -fx-background-color:transparent;
+ }
+
+#leftBtn:pressed{
+    -fx-background-color:#c0c0c0;
+}
+#add:pressed{
+    -fx-background-color:#c0c0c0;
+}
+#toolbar{
+    -fx-background-color:#F2F2F2;
+    -fx-background-insets:0;
+    -fx-padding:0;
+
+}
+
+#toggleContainer{
+    -fx-border-color:#c0c0c0;
+    -fx-border-width:0 0 0 0;
+    -fx-background-insets:0;
+}
+.radio-button:selected{
+    -fx-background-color:white;
+    -fx-border-radius:0;
+}
+
+.radio-button{
+    -fx-background-color:transparent;
+    -fx-border-radius:0;
+    -fx-border-width:1;
+    -fx-border-color:#c0c0c0;
+    -fx-padding:3;
+}
+/*去除radio-button的默认样式*/
+.radio-button  .radio{
+    -fx-background-color:null;
+    -fx-padding:0;
+
+}
+.radio-button .radio .dot{
+    -fx-background-color:null;
+    -fx-padding:0;
+}
+/**********************************/

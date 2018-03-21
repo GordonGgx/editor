@@ -1,0 +1,37 @@
+group 'com.ggx.editor'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+//packagingOptions {
+//    exclude 'META-INF/LICENSE-LGPL-2.1.txt'
+//    exclude 'META-INF/LICENSE-LGPL-3.txt'
+//    exclude 'META-INF/LICENSE-W3C-TEST'
+//}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile project(':richtextfx')
+    compile 'com.jfoenix:jfoenix:1.10.0'
+    def flexmarkVersion = '0.28.32'
+    compile 'com.vladsch.flexmark:flexmark:' + flexmarkVersion
+    compile 'com.vladsch.flexmark:flexmark-util:' + flexmarkVersion
+    compile 'com.vladsch.flexmark:flexmark-ext-tables:' + flexmarkVersion
+//    compile 'com.vladsch.flexmark:flexmark-ext-abbreviation:' + flexmarkVersion
+//    compile 'com.vladsch.flexmark:flexmark-ext-anchorlink:' + flexmarkVersion
+//    compile 'com.vladsch.flexmark:flexmark-ext-aside:' + flexmarkVersion
+//    compile 'com.vladsch.flexmark:flexmark-ext-autolink:' + flexmarkVersion
+//    compile 'com.vladsch.flexmark:flexmark-ext-definition:' + flexmarkVersion
+//    compile 'com.vladsch.flexmark:flexmark-ext-footnotes:' + flexmarkVersion
+//    compile 'com.vladsch.flexmark:flexmark-ext-gfm-strikethrough:' + flexmarkVersion
+//    compile 'com.vladsch.flexmark:flexmark-ext-gfm-tables:' + flexmarkVersion
+//    compile 'com.vladsch.flexmark:flexmark-ext-gfm-tasklist:' + flexmarkVersion
+//    compile 'com.vladsch.flexmark:flexmark-ext-toc:' + flexmarkVersion
+//    compile 'com.vladsch.flexmark:flexmark-ext-wikilink:' + flexmarkVersion
+//    compile 'com.vladsch.flexmark:flexmark-ext-yaml-front-matter:' + flexmarkVersion
+}

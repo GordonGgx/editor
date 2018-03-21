@@ -1,0 +1,7 @@
+.styled-text-area {
+    -fx-cursor: text;
+}
+
+.styled-text-area .paragraph-box .paragraph-text {
+    -fx-padding: 0 2px;
+}
