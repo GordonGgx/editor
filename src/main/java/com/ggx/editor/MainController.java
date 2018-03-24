@@ -4,10 +4,14 @@ import com.ggx.editor.interfaces.TreeListAction;
 import com.ggx.editor.markdown.MarkDownHtmlWrapper;
 import com.ggx.editor.markdown.MarkDownKeyWord;
 import com.ggx.editor.markdown.MarkdownEntity;
+import com.ggx.editor.preview.WebViewPreview;
 import com.ggx.editor.utils.FileUtil;
 import com.ggx.editor.widget.TextFieldTreeCellImpl;
 import com.jfoenix.controls.JFXHamburger;
 import com.jfoenix.transitions.hamburger.HamburgerBackArrowBasicTransition;
+import com.vladsch.flexmark.ast.Node;
+import javafx.beans.property.ReadOnlyDoubleWrapper;
+import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Rectangle2D;
@@ -70,7 +74,7 @@ public class MainController implements Initializable, TreeListAction {
     private HamburgerBackArrowBasicTransition burgerTask3;
 
     private File currentFile;
-    private WebView webView = new WebView();
+    private WebViewPreview webViewPreview=new WebViewPreview();
 
     private CodeArea codeArea;
     private ExecutorService executor;
@@ -84,9 +88,10 @@ public class MainController implements Initializable, TreeListAction {
         this.executor=executor;
     }
 
+    private ReadOnlyDoubleWrapper scrollY=new ReadOnlyDoubleWrapper();
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        webView.getEngine().setJavaScriptEnabled(true);
         codeArea=new CodeArea();
         codeArea.setStyle("-fx-font-size:16");
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
@@ -107,13 +112,16 @@ public class MainController implements Initializable, TreeListAction {
                     //应用高亮样式
                     codeArea.setStyleSpans(0, styleSpans);
                 });
-        codeArea.getStylesheets().add(ClassLoader.getSystemResource("css/java-keywords.css").toExternalForm());
+        //codeArea.getStylesheets().add(ClassLoader.getSystemResource("css/java-keywords.css").toExternalForm());
         EventStreams.changesOf(codeArea.textProperty())
                 .reduceSuccessions((stringChange, stringChange2) -> stringChange2,
                         Duration.ofMillis(500))
                 .subscribe(stringChange -> {
-                    MarkdownEntity html = MarkDownHtmlWrapper.ofContent(codeArea.getText());
-                    webView.getEngine().loadContent(html.toString());
+//                    MarkdownEntity html = MarkDownHtmlWrapper.ofContent(codeArea.getText());
+                    Node node=MarkDownHtmlWrapper.parseTest(codeArea.getText());
+
+                    webViewPreview.update(node,MarkDownHtmlWrapper.render(node));
+//                    webView.getEngine().loadContent(html.toString());
                 });
         ImageView iv = new ImageView(folderIcon);
         iv.setSmooth(true);
@@ -121,7 +129,7 @@ public class MainController implements Initializable, TreeListAction {
         treeView.setShowRoot(false);
         treeView.setEditable(true);
         treeView.setCellFactory(param -> new TextFieldTreeCellImpl(this));
-        File dir = new File("E:/test");
+        File dir = new File("E:\\vertx\\vertxdoc");
         if(dir.exists()){
             TreeItem<File> rootTree = new TreeItem<>(dir, iv);
             searchFile(dir, rootTree);
@@ -135,9 +143,9 @@ public class MainController implements Initializable, TreeListAction {
         EventStreams.changesOf(rootPane.widthProperty()).subscribe(numberChange -> {
             splitePane.setDividerPosition(0, 0.18);
             if (rightPane.getCenter() != null) {
-                webView.setPrefWidth((rootPane.getWidth() - leftPane.getWidth()) / 2);
+                webViewPreview.setWidth((rootPane.getWidth() - leftPane.getWidth()) / 2);
             } else {
-                webView.setPrefWidth((rootPane.getWidth() - leftPane.getWidth()));
+                webViewPreview.setWidth(rootPane.getWidth() - leftPane.getWidth());
             }
         });
         EventStreams.changesOf(toggle.selectedToggleProperty()).subscribe(toggleChange -> {
@@ -149,17 +157,27 @@ public class MainController implements Initializable, TreeListAction {
                     break;
                 case "eye":
                     rightPane.setCenter(null);
-                    webView.setPrefWidth((rootPane.getWidth() - leftPane.getWidth()));
-                    rightPane.setRight(webView);
+                    webViewPreview.setWidth(rootPane.getWidth() - leftPane.getWidth());
+                    rightPane.setRight(webViewPreview.getNode());
                     break;
                 case "realTime":
                     rightPane.setCenter(fileContainer);
-                    webView.setPrefWidth((rootPane.getWidth() - leftPane.getWidth()) / 2);
-                    rightPane.setRight(webView);
+                    webViewPreview.setWidth((rootPane.getWidth() - leftPane.getWidth()) / 2);
+                    rightPane.setRight(webViewPreview.getNode());
                     break;
             }
         });
 
+        ChangeListener<Double> scrollYListener=(observable, oldValue, newValue) -> {
+            double value=codeArea.estimatedScrollYProperty().getValue();
+            double maxValue=codeArea.totalHeightEstimateProperty()
+                    .getOrElse(0.)-codeArea.getHeight();
+            scrollY.set((maxValue>0)?Math.min(Math.max(value/maxValue,0),1):0);
+        };
+        codeArea.estimatedScrollYProperty().addListener(scrollYListener);
+        codeArea.totalHeightEstimateProperty().addListener(scrollYListener);
+        webViewPreview.scrollYProperty().bind(scrollY);
+        webViewPreview.editorSelectionProperty().bind(codeArea.selectionProperty());
     }
 
     private void searchFile(File fileOrDir, TreeItem<File> rootItem) {
@@ -229,8 +247,10 @@ public class MainController implements Initializable, TreeListAction {
             }
         }
         VirtualizedScrollPane<CodeArea> pane = new VirtualizedScrollPane<>(codeArea);
-        MarkdownEntity html = MarkDownHtmlWrapper.ofContent(codeArea.getText());
-        webView.getEngine().loadContent(html.toString());
+        Node node=MarkDownHtmlWrapper.parseTest(codeArea.getText());
+
+        webViewPreview.update(node,MarkDownHtmlWrapper.render(node));
+
         if (fileContainer.getChildren().size() == 2) {
             fileContainer.getChildren().remove(1);
         }

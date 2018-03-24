@@ -16,7 +16,7 @@
             fx:controller="com.ggx.editor.MainController"
             prefHeight="600.0" prefWidth="900.0">
     <stylesheets>
-        <URL value="@/css/main_css"/>
+        <URL value="@/css/main-css.css"/>
     </stylesheets>
     <center>
         <SplitPane fx:id="splitePane" BorderPane.alignment="CENTER">

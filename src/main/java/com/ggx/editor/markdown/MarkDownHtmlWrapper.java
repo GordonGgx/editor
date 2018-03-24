@@ -90,4 +90,29 @@ public class MarkDownHtmlWrapper {
         Node document = parser.parse(content);
         return renderer.render(document);
     }
+
+    public static Node parseTest(String content) {
+        MutableDataSet options = new MutableDataSet();
+        options.setFrom(ParserEmulationProfile.MARKDOWN);
+
+        // enable table parse!
+        options.set(Parser.EXTENSIONS, Arrays.asList(TablesExtension.create()));
+
+
+        Parser parser = Parser.builder(options).build();
+//        HtmlRenderer renderer = HtmlRenderer.builder(options).build();
+
+        Node document = parser.parse(content);
+        return document;
+    }
+    public static String render(Node node) {
+        MutableDataSet options = new MutableDataSet();
+        options.setFrom(ParserEmulationProfile.MARKDOWN);
+
+        // enable table parse!
+        options.set(Parser.EXTENSIONS, Arrays.asList(TablesExtension.create()));
+
+        HtmlRenderer renderer = HtmlRenderer.builder(options).build();
+        return renderer.render(node);
+    }
 }
