@@ -10,6 +10,7 @@ import com.ggx.editor.utils.FileUtil;
 import com.ggx.editor.widget.TextFieldTreeCellImpl;
 import com.jfoenix.controls.JFXHamburger;
 import com.jfoenix.transitions.hamburger.HamburgerBackArrowBasicTransition;
+import com.vladsch.flexmark.ast.Code;
 import com.vladsch.flexmark.ast.Node;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -81,6 +82,7 @@ public class MainController implements Initializable, TreeListAction {
     private MarkDownPreviewPane markDownPreview;
 
     private CodeArea codeArea;
+    private VirtualizedScrollPane<CodeArea> scrollPane;
     private ExecutorService executor;
 
 
@@ -104,7 +106,7 @@ public class MainController implements Initializable, TreeListAction {
         codeArea.setStyle("-fx-font-size:16");
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
         codeArea.richChanges()
-                .filter(ch -> !ch.getInserted().equals(ch.getRemoved())) // XXX
+                .filter(ch -> !ch.getInserted().equals(ch.getRemoved()))
                 .successionEnds(Duration.ofMillis(1000))
                 .supplyTask(()-> MarkDownKeyWord.computeHighlightingAsync(executor,codeArea))
                 .awaitLatest(codeArea.richChanges())
@@ -120,6 +122,7 @@ public class MainController implements Initializable, TreeListAction {
                     //应用高亮样式
                     codeArea.setStyleSpans(0, styleSpans);
                 });
+        scrollPane = new VirtualizedScrollPane<>(codeArea);
         //codeArea.getStylesheets().add(ClassLoader.getSystemResource("css/java-keywords.css").toExternalForm());
         EventStreams.changesOf(codeArea.textProperty())
                 .reduceSuccessions((stringChange, stringChange2) -> stringChange2,
@@ -180,7 +183,7 @@ public class MainController implements Initializable, TreeListAction {
                     .getOrElse(0.)-codeArea.getHeight();
             scrollY.set((maxValue>0)?Math.min(Math.max(value/maxValue,0),1):0);
         };
-        EventStreams.changesOf(codeArea.totalHeightEstimateProperty())
+        EventStreams.changesOf(codeArea.totalHeightEstimateProperty().orElseConst(0.))
                 .filter(doubleChange -> doubleChange.getNewValue()<doubleChange.getOldValue())
                 .subscribe(doubleChange ->{
                     double value=codeArea.estimatedScrollYProperty().getValue();
@@ -253,6 +256,7 @@ public class MainController implements Initializable, TreeListAction {
             StringBuilder sb = new StringBuilder();
             br = new BufferedReader(new FileReader(file));
             br.lines().map(s -> s + "\n").forEach(sb::append);
+            codeArea.clear();
             codeArea.replaceText(0, 0, sb.toString());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -265,12 +269,11 @@ public class MainController implements Initializable, TreeListAction {
                 }
             }
         }
-        VirtualizedScrollPane<CodeArea> pane = new VirtualizedScrollPane<>(codeArea);
         if (fileContainer.getChildren().size() == 2) {
             fileContainer.getChildren().remove(1);
         }
-        fileContainer.getChildren().addAll(pane);
-        pane.scrollYToPixel(0);
+        fileContainer.getChildren().add(scrollPane);
+        scrollPane.scrollYToPixel(0);
         toggleContainer.setVisible(true);
 
     }
