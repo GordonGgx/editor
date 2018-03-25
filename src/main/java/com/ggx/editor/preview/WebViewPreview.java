@@ -3,11 +3,6 @@ package com.ggx.editor.preview;
 import com.ggx.editor.utils.Resource;
 import com.vladsch.flexmark.ast.FencedCodeBlock;
 import com.vladsch.flexmark.ast.NodeVisitor;
-import javafx.application.Platform;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Worker;
 import javafx.scene.Node;
 import javafx.scene.control.IndexRange;
@@ -17,13 +12,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
-public class WebViewPreview {
+public class WebViewPreview implements MarkDownPreviewPane.Preview{
 
+    //代码块语法关键词集合
     private static final HashMap<String, String> prismLangDependenciesMap = new HashMap<>();
 
     private WebView webView;
@@ -31,13 +26,6 @@ public class WebViewPreview {
     private int lastScrollX;
     private int lastScrollY;
     private IndexRange lastEditorSelection;
-    // 'editorSelection' property
-    private final ObjectProperty<IndexRange> editorSelection = new SimpleObjectProperty<>();
-    private DoubleProperty scrollY=new SimpleDoubleProperty();
-    public DoubleProperty scrollYProperty() {return scrollY; }
-    public ObjectProperty<IndexRange> editorSelectionProperty() { return editorSelection; }
-
-    private boolean scrollYrunLaterPending;
 
     public WebViewPreview() {
         getNode();
@@ -53,15 +41,6 @@ public class WebViewPreview {
         webView.setOnDragDropped(null);
         webView.setOnDragDetected(null);
         webView.setOnDragDone(null);
-
-        scrollY.addListener((observable, oldValue, newValue) -> {
-            if(scrollYrunLaterPending)return;
-            scrollYrunLaterPending=true;
-            Platform.runLater(()->{
-                scrollYrunLaterPending=false;
-                scrollY(scrollY.get());
-            });
-        });
 
         webView.getEngine().getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
             if(newValue== Worker.State.SUCCEEDED&&!runWhenLoadedList.isEmpty()){
@@ -100,6 +79,7 @@ public class WebViewPreview {
      * 获取webView控件
      * @return
      */
+    @Override
     public Node getNode() {
         if(webView==null){
             createNodes();
@@ -110,8 +90,9 @@ public class WebViewPreview {
     /**
      * 更新webView
      */
-    public void update(com.vladsch.flexmark.ast.Node node,String text/*MarkDownPreviewPane.PreviewContext context,
-                       MarkDownPreviewPane.Renderer renderer*/) {
+    @Override
+    public void update(MarkDownPreviewPane.PreviewContext context,
+                       MarkDownPreviewPane.Renderer renderer) {
         if(!webView.getEngine().getLoadWorker().isRunning()){
             // get window.scrollX and window.scrollY from web engine,
             // but only if no worker is running (in this case the result would be zero)
@@ -120,7 +101,7 @@ public class WebViewPreview {
             lastScrollX = (scrollXobj instanceof Number) ? ((Number)scrollXobj).intValue() : 0;
             lastScrollY = (scrollYobj instanceof Number) ? ((Number)scrollYobj).intValue() : 0;
         }
-        lastEditorSelection=editorSelection.get();
+        lastEditorSelection=context.getEditorSelection();
 //        Path path=context.getPath();
 //        String base = (path != null)
 //                ? ("<base href=\"" + path.getParent().toUri().toString() + "\">\n")
@@ -128,6 +109,7 @@ public class WebViewPreview {
         String scrollScript = (lastScrollX > 0 || lastScrollY > 0)
                 ? ("  onload='window.scrollTo("+lastScrollX+", "+lastScrollY+");'")
                 : "";
+        String html=renderer.getHtml();
         webView.getEngine().loadContent(
                 "<!DOCTYPE html>\n"
                         + "<html>\n"
@@ -141,11 +123,11 @@ public class WebViewPreview {
                         + "}\n"
                         + "</style>\n"
                         + "<script src=\"" + Resource.getResource("js/preview.js") + "\"></script>\n"
-                        + prismSyntaxHighlighting(node)
+                        + prismSyntaxHighlighting(context.getMarkdownAST())
                         /*+ base*/
                         + "</head>\n"
                         + "<body" + scrollScript + ">\n"
-                        + text
+                        + html
                         + "<script>" + highlightNodesAt(lastEditorSelection) + "</script>\n"
                         + "</body>\n"
                         + "</html>"
@@ -156,21 +138,21 @@ public class WebViewPreview {
      * 控制当前webView垂直滚动
      * @param value
      */
-    public void scrollY(double value) {
+    @Override
+    public void scrollY(MarkDownPreviewPane.PreviewContext context,double value) {
         runWhenLoaded(()->{
-            webView.getEngine().executeScript("preview.scrollTo(" + value + ");");
+                webView.getEngine().executeScript("preview.scrollTo(" + value + ");");
         });
     }
 
-
+    @Override
     public void editorSelectionChanged(MarkDownPreviewPane.PreviewContext context, IndexRange range) {
         if(range.equals(lastEditorSelection)){
             return;
         }
         lastEditorSelection=range;
-        runWhenLoaded(()->{
-            webView.getEngine().executeScript(highlightNodesAt(range));
-        });
+        runWhenLoaded(()->
+            webView.getEngine().executeScript("preview.highlightNodesAt(" + range.getEnd() + ")"));
     }
 
     private String highlightNodesAt(IndexRange range) {
@@ -187,7 +169,6 @@ public class WebViewPreview {
             public void visit(com.vladsch.flexmark.ast.Node node) {
                 if (node instanceof FencedCodeBlock) {
                     String language = ((FencedCodeBlock)node).getInfo().toString();
-                    System.out.println(language.contains(language));
                     if (language.contains(language))
                         languages.add(language);
 

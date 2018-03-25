@@ -26,9 +26,10 @@
  */
 
 var preview = {
-
 	scrollTo: function(value) {
-		window.scrollTo(0, (document.body.scrollHeight - window.innerHeight) * value);
+		let y=(document.body.scrollHeight - window.innerHeight) * value;
+		window.scrollTo(0, y);
+
 	},
 
 	highlightTags: ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6',

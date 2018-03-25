@@ -4,6 +4,7 @@ import com.ggx.editor.interfaces.TreeListAction;
 import com.ggx.editor.markdown.MarkDownHtmlWrapper;
 import com.ggx.editor.markdown.MarkDownKeyWord;
 import com.ggx.editor.markdown.MarkdownEntity;
+import com.ggx.editor.preview.MarkDownPreviewPane;
 import com.ggx.editor.preview.WebViewPreview;
 import com.ggx.editor.utils.FileUtil;
 import com.ggx.editor.widget.TextFieldTreeCellImpl;
@@ -11,6 +12,8 @@ import com.jfoenix.controls.JFXHamburger;
 import com.jfoenix.transitions.hamburger.HamburgerBackArrowBasicTransition;
 import com.vladsch.flexmark.ast.Node;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -74,7 +77,8 @@ public class MainController implements Initializable, TreeListAction {
     private HamburgerBackArrowBasicTransition burgerTask3;
 
     private File currentFile;
-    private WebViewPreview webViewPreview=new WebViewPreview();
+
+    private MarkDownPreviewPane markDownPreview;
 
     private CodeArea codeArea;
     private ExecutorService executor;
@@ -89,10 +93,14 @@ public class MainController implements Initializable, TreeListAction {
     }
 
     private ReadOnlyDoubleWrapper scrollY=new ReadOnlyDoubleWrapper();
+    private ReadOnlyObjectWrapper<Node> markDownAST=new ReadOnlyObjectWrapper<>();
+    private ReadOnlyStringWrapper markDownText=new ReadOnlyStringWrapper();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        markDownPreview=new MarkDownPreviewPane();
         codeArea=new CodeArea();
+        codeArea.setWrapText(true);
         codeArea.setStyle("-fx-font-size:16");
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
         codeArea.richChanges()
@@ -117,11 +125,9 @@ public class MainController implements Initializable, TreeListAction {
                 .reduceSuccessions((stringChange, stringChange2) -> stringChange2,
                         Duration.ofMillis(500))
                 .subscribe(stringChange -> {
-//                    MarkdownEntity html = MarkDownHtmlWrapper.ofContent(codeArea.getText());
                     Node node=MarkDownHtmlWrapper.parseTest(codeArea.getText());
-
-                    webViewPreview.update(node,MarkDownHtmlWrapper.render(node));
-//                    webView.getEngine().loadContent(html.toString());
+                    markDownText.set(stringChange.getNewValue());
+                    markDownAST.set(node);
                 });
         ImageView iv = new ImageView(folderIcon);
         iv.setSmooth(true);
@@ -143,9 +149,9 @@ public class MainController implements Initializable, TreeListAction {
         EventStreams.changesOf(rootPane.widthProperty()).subscribe(numberChange -> {
             splitePane.setDividerPosition(0, 0.18);
             if (rightPane.getCenter() != null) {
-                webViewPreview.setWidth((rootPane.getWidth() - leftPane.getWidth()) / 2);
+                markDownPreview.setWidth((rootPane.getWidth() - leftPane.getWidth()) / 2);
             } else {
-                webViewPreview.setWidth(rootPane.getWidth() - leftPane.getWidth());
+                markDownPreview.setWidth(rootPane.getWidth() - leftPane.getWidth());
             }
         });
         EventStreams.changesOf(toggle.selectedToggleProperty()).subscribe(toggleChange -> {
@@ -157,13 +163,13 @@ public class MainController implements Initializable, TreeListAction {
                     break;
                 case "eye":
                     rightPane.setCenter(null);
-                    webViewPreview.setWidth(rootPane.getWidth() - leftPane.getWidth());
-                    rightPane.setRight(webViewPreview.getNode());
+                    markDownPreview.setWidth(rootPane.getWidth() - leftPane.getWidth());
+                    rightPane.setRight(markDownPreview.getPreviewNode());
                     break;
                 case "realTime":
                     rightPane.setCenter(fileContainer);
-                    webViewPreview.setWidth((rootPane.getWidth() - leftPane.getWidth()) / 2);
-                    rightPane.setRight(webViewPreview.getNode());
+                    markDownPreview.setWidth((rootPane.getWidth() - leftPane.getWidth()) / 2);
+                    rightPane.setRight(markDownPreview.getPreviewNode());
                     break;
             }
         });
@@ -174,10 +180,23 @@ public class MainController implements Initializable, TreeListAction {
                     .getOrElse(0.)-codeArea.getHeight();
             scrollY.set((maxValue>0)?Math.min(Math.max(value/maxValue,0),1):0);
         };
+        EventStreams.changesOf(codeArea.totalHeightEstimateProperty())
+                .filter(doubleChange -> doubleChange.getNewValue()<doubleChange.getOldValue())
+                .subscribe(doubleChange ->{
+                    double value=codeArea.estimatedScrollYProperty().getValue();
+                    double maxValue=codeArea.totalHeightEstimateProperty()
+                            .getOrElse(0.)-codeArea.getHeight();
+                    scrollY.set((maxValue>0)?Math.min(Math.max(value/maxValue,0),1):0);
+                } );
         codeArea.estimatedScrollYProperty().addListener(scrollYListener);
-        codeArea.totalHeightEstimateProperty().addListener(scrollYListener);
-        webViewPreview.scrollYProperty().bind(scrollY);
-        webViewPreview.editorSelectionProperty().bind(codeArea.selectionProperty());
+        markDownPreview.markdownTextProperty().bind(markDownText);
+        markDownPreview.markdownASTProperty().bind(markDownAST);
+        Node node=MarkDownHtmlWrapper.parseTest("");
+        markDownText.set("");
+        markDownAST.set(node);
+        markDownPreview.scrollYProperty().bind(scrollY);
+        markDownPreview.editorSelectionProperty().bind(codeArea.selectionProperty());
+
     }
 
     private void searchFile(File fileOrDir, TreeItem<File> rootItem) {
@@ -247,10 +266,6 @@ public class MainController implements Initializable, TreeListAction {
             }
         }
         VirtualizedScrollPane<CodeArea> pane = new VirtualizedScrollPane<>(codeArea);
-        Node node=MarkDownHtmlWrapper.parseTest(codeArea.getText());
-
-        webViewPreview.update(node,MarkDownHtmlWrapper.render(node));
-
         if (fileContainer.getChildren().size() == 2) {
             fileContainer.getChildren().remove(1);
         }
