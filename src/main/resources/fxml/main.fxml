@@ -10,6 +10,7 @@
 <?import com.jfoenix.controls.JFXRadioButton?>
 <?import com.jfoenix.controls.JFXToggleButton?>
 <?import javafx.embed.swing.SwingNode?>
+<?import javafx.scene.input.KeyCodeCombination?>
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:id="rootPane"
@@ -18,6 +19,52 @@
     <stylesheets>
         <URL value="@/css/main-css.css"/>
     </stylesheets>
+    <top>
+        <MenuBar>
+            <Menu text="File">
+                <MenuItem>
+                    <text>Open</text>
+                </MenuItem>
+                <MenuItem>
+                    <text>Open</text>
+                </MenuItem>
+                <MenuItem>
+                    <text>Open</text>
+                </MenuItem>
+            </Menu>
+            <Menu text="Edit">
+                <MenuItem>
+                    <text>Open</text>
+                </MenuItem>
+                <MenuItem>
+                    <text>Open</text>
+                </MenuItem>
+                <MenuItem>
+                    <text>Open</text>
+                </MenuItem>
+            </Menu>
+            <Menu text="View">
+                <MenuItem>
+                    <text>Open</text>
+                </MenuItem>
+                <MenuItem>
+                    <text>Edit</text>
+                </MenuItem>
+                <MenuItem>
+                    <text>View</text>
+                </MenuItem>
+            </Menu>
+            <Menu text="Help">
+                <MenuItem>
+                    <text>About</text>
+                    <accelerator>
+                        <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                    </accelerator>
+                </MenuItem>
+            </Menu>
+
+        </MenuBar>
+    </top>
     <center>
         <SplitPane fx:id="splitePane" BorderPane.alignment="CENTER">
             <BorderPane fx:id="leftPane">

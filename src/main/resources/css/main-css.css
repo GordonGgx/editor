@@ -111,3 +111,14 @@
     -fx-padding:0;
 }
 /**********************************/
+/*Menu style*/
+.menu-bar{
+    -fx-padding: 0;
+    -fx-background-color: #F2F2F2;
+}
+.menu-item{
+    -fx-pref-height: 30;
+}
+.context-menu{
+    -fx-padding: 0;
+}

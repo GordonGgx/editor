@@ -1,21 +1,12 @@
 package com.ggx.editor;
 
+import com.ggx.editor.editor.MarkDownEditorPane;
 import com.ggx.editor.interfaces.TreeListAction;
-import com.ggx.editor.markdown.MarkDownHtmlWrapper;
-import com.ggx.editor.markdown.MarkDownKeyWord;
-import com.ggx.editor.markdown.MarkdownEntity;
 import com.ggx.editor.preview.MarkDownPreviewPane;
-import com.ggx.editor.preview.WebViewPreview;
 import com.ggx.editor.utils.FileUtil;
 import com.ggx.editor.widget.TextFieldTreeCellImpl;
 import com.jfoenix.controls.JFXHamburger;
 import com.jfoenix.transitions.hamburger.HamburgerBackArrowBasicTransition;
-import com.vladsch.flexmark.ast.Code;
-import com.vladsch.flexmark.ast.Node;
-import javafx.beans.property.ReadOnlyDoubleWrapper;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.ReadOnlyStringWrapper;
-import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Rectangle2D;
@@ -26,20 +17,14 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
-import javafx.scene.web.WebView;
 import javafx.stage.Stage;
-import org.fxmisc.flowless.VirtualizedScrollPane;
-import org.fxmisc.richtext.CodeArea;
-import org.fxmisc.richtext.LineNumberFactory;
 import org.reactfx.EventStreams;
 
 import java.io.*;
 import java.net.URL;
 import java.text.DateFormat;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
@@ -80,10 +65,7 @@ public class MainController implements Initializable, TreeListAction {
     private File currentFile;
 
     private MarkDownPreviewPane markDownPreview;
-
-    private CodeArea codeArea;
-    private VirtualizedScrollPane<CodeArea> scrollPane;
-    private ExecutorService executor;
+    private MarkDownEditorPane markDownEditorPane;
 
 
     public void setStage(Stage stage) {
@@ -91,47 +73,15 @@ public class MainController implements Initializable, TreeListAction {
     }
 
     public void setExecutor(ExecutorService executor){
-        this.executor=executor;
+        markDownEditorPane.setExecutor(executor);
     }
-
-    private ReadOnlyDoubleWrapper scrollY=new ReadOnlyDoubleWrapper();
-    private ReadOnlyObjectWrapper<Node> markDownAST=new ReadOnlyObjectWrapper<>();
-    private ReadOnlyStringWrapper markDownText=new ReadOnlyStringWrapper();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         markDownPreview=new MarkDownPreviewPane();
-        codeArea=new CodeArea();
-        codeArea.setWrapText(true);
-        codeArea.setStyle("-fx-font-size:16");
-        codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
-        codeArea.richChanges()
-                .filter(ch -> !ch.getInserted().equals(ch.getRemoved()))
-                .successionEnds(Duration.ofMillis(1000))
-                .supplyTask(()-> MarkDownKeyWord.computeHighlightingAsync(executor,codeArea))
-                .awaitLatest(codeArea.richChanges())
-                .filterMap(t -> {
-                    if(t.isSuccess()) {
-                        return Optional.of(t.get());
-                    } else {
-                        t.getFailure().printStackTrace();
-                        return Optional.empty();
-                    }
-                })
-                .subscribe(styleSpans -> {
-                    //应用高亮样式
-                    codeArea.setStyleSpans(0, styleSpans);
-                });
-        scrollPane = new VirtualizedScrollPane<>(codeArea);
+        markDownEditorPane=new MarkDownEditorPane();
+
         //codeArea.getStylesheets().add(ClassLoader.getSystemResource("css/java-keywords.css").toExternalForm());
-        EventStreams.changesOf(codeArea.textProperty())
-                .reduceSuccessions((stringChange, stringChange2) -> stringChange2,
-                        Duration.ofMillis(500))
-                .subscribe(stringChange -> {
-                    Node node=MarkDownHtmlWrapper.parseTest(codeArea.getText());
-                    markDownText.set(stringChange.getNewValue());
-                    markDownAST.set(node);
-                });
         ImageView iv = new ImageView(folderIcon);
         iv.setSmooth(true);
         iv.setViewport(new Rectangle2D(0, 0, 16, 16));
@@ -177,29 +127,10 @@ public class MainController implements Initializable, TreeListAction {
             }
         });
 
-        ChangeListener<Double> scrollYListener=(observable, oldValue, newValue) -> {
-            double value=codeArea.estimatedScrollYProperty().getValue();
-            double maxValue=codeArea.totalHeightEstimateProperty()
-                    .getOrElse(0.)-codeArea.getHeight();
-            scrollY.set((maxValue>0)?Math.min(Math.max(value/maxValue,0),1):0);
-        };
-        EventStreams.changesOf(codeArea.totalHeightEstimateProperty().orElseConst(0.))
-                .filter(doubleChange -> doubleChange.getNewValue()<doubleChange.getOldValue())
-                .subscribe(doubleChange ->{
-                    double value=codeArea.estimatedScrollYProperty().getValue();
-                    double maxValue=codeArea.totalHeightEstimateProperty()
-                            .getOrElse(0.)-codeArea.getHeight();
-                    scrollY.set((maxValue>0)?Math.min(Math.max(value/maxValue,0),1):0);
-                } );
-        codeArea.estimatedScrollYProperty().addListener(scrollYListener);
-        markDownPreview.markdownTextProperty().bind(markDownText);
-        markDownPreview.markdownASTProperty().bind(markDownAST);
-        Node node=MarkDownHtmlWrapper.parseTest("");
-        markDownText.set("");
-        markDownAST.set(node);
-        markDownPreview.scrollYProperty().bind(scrollY);
-        markDownPreview.editorSelectionProperty().bind(codeArea.selectionProperty());
-
+        markDownPreview.markdownTextProperty().bind(markDownEditorPane.markDownTextProperty());
+        markDownPreview.markdownASTProperty().bind(markDownEditorPane.markDownASTProperty());
+        markDownPreview.scrollYProperty().bind(markDownEditorPane.scrollYProperty());
+        markDownPreview.editorSelectionProperty().bind(markDownEditorPane.selectionProperty());
     }
 
     private void searchFile(File fileOrDir, TreeItem<File> rootItem) {
@@ -256,8 +187,7 @@ public class MainController implements Initializable, TreeListAction {
             StringBuilder sb = new StringBuilder();
             br = new BufferedReader(new FileReader(file));
             br.lines().map(s -> s + "\n").forEach(sb::append);
-            codeArea.clear();
-            codeArea.replaceText(0, 0, sb.toString());
+            markDownEditorPane.setNewFileContent(sb.toString());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } finally {
@@ -272,8 +202,8 @@ public class MainController implements Initializable, TreeListAction {
         if (fileContainer.getChildren().size() == 2) {
             fileContainer.getChildren().remove(1);
         }
-        fileContainer.getChildren().add(scrollPane);
-        scrollPane.scrollYToPixel(0);
+        fileContainer.getChildren().add(markDownEditorPane.getScrollPane());
+        markDownEditorPane.getScrollPane().scrollYToPixel(0);
         toggleContainer.setVisible(true);
 
     }
