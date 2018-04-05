@@ -35,7 +35,7 @@ public class Main extends Application{
     public void start(Stage primaryStage) throws Exception {
         main=primaryStage;
         primaryStage.getIcons().add(new Image("icons/markdownwriterfx32.png"));
-        primaryStage.setTitle("编辑器");
+        primaryStage.setTitle("Editor");
         FXMLLoader loader=new FXMLLoader(ClassLoader.getSystemResource("fxml/main.fxml"));
         Parent root=loader.load();
         MainController controller=loader.getController();
@@ -54,5 +54,9 @@ public class Main extends Application{
     }
     public static Stage get(){
         return main;
+    }
+
+    public static void main(String[] args) {
+        launch(args);
     }
 }

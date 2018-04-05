@@ -3,14 +3,10 @@
 <?import com.jfoenix.controls.JFXHamburger?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.input.KeyCodeCombination?>
 <?import javafx.scene.layout.*?>
 <?import java.net.URL?>
-<?import com.jfoenix.controls.JFXRadioButton?>
-<?import com.jfoenix.controls.JFXToggleButton?>
-<?import javafx.embed.swing.SwingNode?>
-<?import javafx.scene.input.KeyCodeCombination?>
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:id="rootPane"
@@ -35,6 +31,12 @@
                             <Image url="@/icons/open_16.png"/>
                         </ImageView>
                     </graphic>
+                </MenuItem>
+                <MenuItem fx:id="save" onAction="#onSaveAction" disable="true">
+                    <text>Save</text>
+                    <accelerator>
+                        <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                    </accelerator>
                 </MenuItem>
                 <MenuItem onAction="#exitApp">
                     <text>Exit</text>
@@ -63,10 +65,10 @@
                 </MenuItem>
             </Menu>
             <Menu text="Help">
-                <MenuItem>
+                <MenuItem onAction="#aboutAction">
                     <text>About</text>
                     <accelerator>
-                        <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                        <KeyCodeCombination alt="UP" code="A" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
                     </accelerator>
                 </MenuItem>
             </Menu>

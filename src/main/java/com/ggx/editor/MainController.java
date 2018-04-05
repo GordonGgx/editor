@@ -7,7 +7,6 @@ import com.ggx.editor.utils.FileUtil;
 import com.ggx.editor.widget.TextFieldTreeCellImpl;
 import com.jfoenix.controls.JFXHamburger;
 import com.jfoenix.transitions.hamburger.HamburgerBackArrowBasicTransition;
-import com.sun.javaws.ui.LaunchErrorDialog;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -56,6 +55,8 @@ public class MainController implements Initializable, TreeListAction {
     public ToggleGroup toggle;
     @FXML
     public HBox toggleContainer;
+    @FXML
+    public MenuItem save;
 
     private final Image folderIcon = new Image(ClassLoader.getSystemResourceAsStream("icons/folder_16.png"));
     private final Image fileIcon = new Image(ClassLoader.getSystemResourceAsStream("icons/file_16.png"));
@@ -164,6 +165,7 @@ public class MainController implements Initializable, TreeListAction {
         if(!file.exists()){
             return;
         }
+        save.setDisable(false);
         currentFile = file;
         title.setText(FileUtil.prefixName(file) + " " + DateFormat.getDateInstance(DateFormat.DEFAULT, Locale.CHINESE).format(file.lastModified()));
         if (file.getName().endsWith(".md")) {
@@ -171,7 +173,6 @@ public class MainController implements Initializable, TreeListAction {
         } else {
             title.setGraphic(new ImageView(new Image(ClassLoader.getSystemResourceAsStream("icons/txt_24.png"))));
         }
-        //读取文件的内容设置到编辑器区域
         BufferedReader br = null;
         try {
             StringBuilder sb = new StringBuilder();
@@ -205,6 +206,7 @@ public class MainController implements Initializable, TreeListAction {
             title.setText(null);
             fileContainer.getChildren().remove(1);
             currentFile = null;
+            save.setDisable(false);
         }
     }
 
@@ -222,6 +224,7 @@ public class MainController implements Initializable, TreeListAction {
                 fileContainer.getChildren().remove(1);
             }
             currentFile = null;
+            save.setDisable(true);
         }
         if (FileUtil.deleteDir(file)) {
             item.getParent().getChildren().remove(item);
@@ -245,6 +248,15 @@ public class MainController implements Initializable, TreeListAction {
         DirectoryChooser chooser=new DirectoryChooser();
         File dir=chooser.showDialog(Main.get());
         if(dir!=null&&dir.exists()){
+            //关闭面板
+            if (fileContainer.getChildren().size() == 2) {
+                fileContainer.getChildren().remove(1);
+            }
+            title.setText(null);
+            title.setGraphic(null);
+            currentFile=null;
+            save.setDisable(true);
+            toggleContainer.setVisible(false);
             ImageView iv = new ImageView(folderIcon);
             iv.setSmooth(true);
             iv.setViewport(new Rectangle2D(0, 0, 16, 16));
@@ -281,5 +293,17 @@ public class MainController implements Initializable, TreeListAction {
     @FXML
     public void exitApp(ActionEvent actionEvent) {
         Main.get().close();
+    }
+
+    @FXML
+    public void aboutAction(ActionEvent actionEvent) {
+        System.out.println("about meun");
+    }
+
+    @FXML
+    public void onSaveAction(ActionEvent actionEvent) {
+        if(currentFile!=null&&currentFile.exists()){
+            markDownEditorPane.saveFile(currentFile);
+        }
     }
 }

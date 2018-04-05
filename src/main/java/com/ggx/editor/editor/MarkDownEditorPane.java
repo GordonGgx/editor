@@ -1,29 +1,29 @@
 package com.ggx.editor.editor;
 
-import com.ggx.editor.markdown.MarkDownHtmlWrapper;
 import com.ggx.editor.markdown.MarkDownKeyWord;
 import com.ggx.editor.options.Options;
-import com.vladsch.flexmark.ast.Code;
 import com.vladsch.flexmark.ast.Node;
 import com.vladsch.flexmark.ext.tables.TablesExtension;
 import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.parser.ParserEmulationProfile;
 import com.vladsch.flexmark.util.options.MutableDataSet;
-import javafx.beans.property.*;
+import javafx.beans.property.ReadOnlyDoubleWrapper;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.event.Event;
-import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.scene.control.IndexRange;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
-import org.reactfx.Change;
 import org.reactfx.EventStreams;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -75,9 +75,9 @@ public class MarkDownEditorPane {
                             .getOrElse(0.)-textArea.getHeight();
                     scrollY.set((maxValue>0)?Math.min(Math.max(value/maxValue,0),1):0);
                 } );
-        //监听textArea滚动
+        //listener textArea scroll
         textArea.estimatedScrollYProperty().addListener(scrollYListener);
-        //设置关键词高亮
+        //keyworlds lighheith
         textArea.richChanges()
                 .filter(ch -> !ch.getInserted().equals(ch.getRemoved()))
                 .successionEnds(Duration.ofMillis(1000))
@@ -85,10 +85,8 @@ public class MarkDownEditorPane {
                 .awaitLatest(textArea.richChanges())
                 .filterMap(t -> {
                     if(t.isSuccess()) {
-                        System.out.println("成功");
                         return Optional.of(t.get());
                     } else {
-                        System.out.println("失败");
                         t.getFailure().printStackTrace();
                         return Optional.empty();
                     }
@@ -169,5 +167,15 @@ public class MarkDownEditorPane {
 
     public VirtualizedScrollPane<CodeArea> getScrollPane() {
         return scrollPane;
+    }
+
+    public void saveFile(File file){
+        String text=textArea.getText();
+        try (BufferedWriter fos=new BufferedWriter(new FileWriter(file,false))){
+            fos.write(text);
+            fos.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

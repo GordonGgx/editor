@@ -15,22 +15,22 @@ import java.util.List;
 public class MarkDownPreviewPane {
 
     private PreviewContext previewContext;
-    //预览
+    //preview
     private Preview webViewPreview;
-    //渲染
+    //renderer
     private Renderer renderer;
 
-    // 'markdownText' 值
+    // 'markdownText' value
     private final SimpleStringProperty markdownText = new SimpleStringProperty();
     public SimpleStringProperty markdownTextProperty() { return markdownText; }
     // 'markdownAST' property
     private final ObjectProperty<Node> markdownAST = new SimpleObjectProperty<>();
     public ObjectProperty<Node> markdownASTProperty() { return markdownAST; }
-    //滚动轴y
+
     private DoubleProperty scrollY=new SimpleDoubleProperty();
     public double getScrollY() { return scrollY.get(); }
     public DoubleProperty scrollYProperty() { return scrollY; }
-    //编辑器的区域选择
+
     private final ObjectProperty<IndexRange> editorSelection = new SimpleObjectProperty<>();
     public ObjectProperty<IndexRange> editorSelectionProperty() { return editorSelection; }
 
@@ -50,7 +50,7 @@ public class MarkDownPreviewPane {
         webViewPreview=new WebViewPreview();
         renderer=new CommonmarkPreviewRenderer();
 
-        //设置监听绑定
+
         EventStreams.changesOf(markdownText).subscribe(stringChange -> update());
         EventStreams.changesOf(markdownAST).subscribe(nodeChange -> update());
         EventStreams.changesOf(scrollY).subscribe(numberChange -> scrollY());
