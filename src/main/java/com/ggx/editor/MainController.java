@@ -7,6 +7,8 @@ import com.ggx.editor.utils.FileUtil;
 import com.ggx.editor.widget.TextFieldTreeCellImpl;
 import com.jfoenix.controls.JFXHamburger;
 import com.jfoenix.transitions.hamburger.HamburgerBackArrowBasicTransition;
+import com.sun.javaws.ui.LaunchErrorDialog;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Rectangle2D;
@@ -17,7 +19,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
-import javafx.stage.Stage;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import org.reactfx.EventStreams;
 
 import java.io.*;
@@ -54,9 +57,6 @@ public class MainController implements Initializable, TreeListAction {
     @FXML
     public HBox toggleContainer;
 
-    private Stage stage;
-
-
     private final Image folderIcon = new Image(ClassLoader.getSystemResourceAsStream("icons/folder_16.png"));
     private final Image fileIcon = new Image(ClassLoader.getSystemResourceAsStream("icons/file_16.png"));
 
@@ -68,10 +68,6 @@ public class MainController implements Initializable, TreeListAction {
     private MarkDownEditorPane markDownEditorPane;
 
 
-    public void setStage(Stage stage) {
-        this.stage = stage;
-    }
-
     public void setExecutor(ExecutorService executor){
         markDownEditorPane.setExecutor(executor);
     }
@@ -81,19 +77,10 @@ public class MainController implements Initializable, TreeListAction {
         markDownPreview=new MarkDownPreviewPane();
         markDownEditorPane=new MarkDownEditorPane();
 
-        //codeArea.getStylesheets().add(ClassLoader.getSystemResource("css/java-keywords.css").toExternalForm());
-        ImageView iv = new ImageView(folderIcon);
-        iv.setSmooth(true);
-        iv.setViewport(new Rectangle2D(0, 0, 16, 16));
-        treeView.setShowRoot(false);
+        treeView.setShowRoot(true);
         treeView.setEditable(true);
         treeView.setCellFactory(param -> new TextFieldTreeCellImpl(this));
-        File dir = new File("E:\\vertx\\vertxdoc");
-        if(dir.exists()){
-            TreeItem<File> rootTree = new TreeItem<>(dir, iv);
-            searchFile(dir, rootTree);
-            treeView.setRoot(rootTree);
-        }
+
 
         jfxHamburger.setMaxSize(20, 10);
         burgerTask3 = new HamburgerBackArrowBasicTransition(jfxHamburger);
@@ -174,6 +161,9 @@ public class MainController implements Initializable, TreeListAction {
 
     @Override
     public void openFile(File file) {
+        if(!file.exists()){
+            return;
+        }
         currentFile = file;
         title.setText(FileUtil.prefixName(file) + " " + DateFormat.getDateInstance(DateFormat.DEFAULT, Locale.CHINESE).format(file.lastModified()));
         if (file.getName().endsWith(".md")) {
@@ -241,15 +231,55 @@ public class MainController implements Initializable, TreeListAction {
 
     @Override
     public void modifyFile(File file) {
+        currentFile = file;
+        title.setText(FileUtil.prefixName(file) + " " + DateFormat.getDateInstance(DateFormat.DEFAULT, Locale.CHINESE).format(file.lastModified()));
+        if (file.getName().endsWith(".md")) {
+            title.setGraphic(new ImageView(new Image(ClassLoader.getSystemResourceAsStream("icons/md_24.png"))));
+        } else {
+            title.setGraphic(new ImageView(new Image(ClassLoader.getSystemResourceAsStream("icons/txt_24.png"))));
+        }
+    }
+
+    @FXML
+    public void openDir() {
+        DirectoryChooser chooser=new DirectoryChooser();
+        File dir=chooser.showDialog(Main.get());
+        if(dir!=null&&dir.exists()){
+            ImageView iv = new ImageView(folderIcon);
+            iv.setSmooth(true);
+            iv.setViewport(new Rectangle2D(0, 0, 16, 16));
+            TreeItem<File> rootTree = new TreeItem<>(dir, iv);
+            searchFile(dir, rootTree);
+            treeView.setRoot(rootTree);
+        }
 
     }
 
     @FXML
-    public void add(MouseEvent mouseEvent) {
-        ChoiceDialog<String> dialog=new ChoiceDialog<>();
-        dialog.setTitle("新建");
-        dialog.setContentText("Hello Ggx");
-        dialog.getItems().addAll("markdown");
-        dialog.show();
+    public void createDir() {
+        FileChooser fileChooser=new FileChooser();
+        fileChooser.setTitle("Save dir");
+        File dir=fileChooser.showSaveDialog(Main.get());
+        if(!dir.exists()){
+            if(dir.mkdir()){
+                System.out.println("创建成功");
+                ImageView iv = new ImageView(folderIcon);
+                iv.setSmooth(true);
+                iv.setViewport(new Rectangle2D(0, 0, 16, 16));
+                TreeItem<File> rootTree = new TreeItem<>(dir, iv);
+                treeView.setShowRoot(true);
+                treeView.setRoot(rootTree);
+            }else {
+                Alert error=new Alert(Alert.AlertType.ERROR);
+                error.setContentText("工作空间创建失败.");
+                error.initOwner(Main.get());
+                error.show();
+            }
+        }
+    }
+
+    @FXML
+    public void exitApp(ActionEvent actionEvent) {
+        Main.get().close();
     }
 }

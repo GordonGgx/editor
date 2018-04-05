@@ -98,6 +98,7 @@ public class TextFieldTreeCellImpl extends TreeCell<File> {
     @Override
     public void cancelEdit() {
         super.cancelEdit();
+        System.out.println("取消编辑");
         setText(getItem().getName());
         setGraphic(getTreeItem().getGraphic());
     }
@@ -110,6 +111,7 @@ public class TextFieldTreeCellImpl extends TreeCell<File> {
             setGraphic(null);
         } else {
             if (isEditing()) {
+                System.out.println("编辑");
                 if (textField != null) {
                     textField.setText(getString());
                 }
@@ -119,7 +121,6 @@ public class TextFieldTreeCellImpl extends TreeCell<File> {
                 setText(getString());
                 setGraphic(getTreeItem().getGraphic());
                 if(getTreeItem().isLeaf()&&!getItem().isDirectory()){
-
                     setContextMenu(fileMenu);
                 }else {
                     setContextMenu(dirMenu);
@@ -186,7 +187,12 @@ public class TextFieldTreeCellImpl extends TreeCell<File> {
         textField.setPrefSize(getPrefWidth(),getPrefHeight());
         textField.setOnKeyReleased((KeyEvent t) -> {
             if (t.getCode() == KeyCode.ENTER) {
-                commitEdit(new File(textField.getText()));
+                File old=getItem();
+                File newName=new File(old.getParentFile(),textField.getText());
+                if(old.renameTo(newName)){
+                    commitEdit(newName);
+                    action.modifyFile(newName);
+                }
             } else if (t.getCode() == KeyCode.ESCAPE) {
                 cancelEdit();
             }

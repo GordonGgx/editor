@@ -29,14 +29,16 @@ import java.util.concurrent.Executors;
 public class Main extends Application{
 
     private ExecutorService executor;
+    private static Stage main;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        main=primaryStage;
+        primaryStage.getIcons().add(new Image("icons/markdownwriterfx32.png"));
         primaryStage.setTitle("编辑器");
         FXMLLoader loader=new FXMLLoader(ClassLoader.getSystemResource("fxml/main.fxml"));
         Parent root=loader.load();
         MainController controller=loader.getController();
-        controller.setStage(primaryStage);
         executor=Executors.newSingleThreadExecutor();
         controller.setExecutor(executor);
         Scene scene=new Scene(root);
@@ -48,5 +50,9 @@ public class Main extends Application{
     @Override
     public void stop() throws Exception {
         executor.shutdown();
+        main=null;
+    }
+    public static Stage get(){
+        return main;
     }
 }

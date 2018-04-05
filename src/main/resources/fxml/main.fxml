@@ -22,14 +22,22 @@
     <top>
         <MenuBar>
             <Menu text="File">
-                <MenuItem>
+                <Menu>
+                    <text>New</text>
+                    <MenuItem onAction="#createDir">
+                        <text>New WorkSpace...</text>
+                    </MenuItem>
+                </Menu>
+                <MenuItem onAction="#openDir">
                     <text>Open</text>
+                    <graphic>
+                        <ImageView>
+                            <Image url="@/icons/open_16.png"/>
+                        </ImageView>
+                    </graphic>
                 </MenuItem>
-                <MenuItem>
-                    <text>Open</text>
-                </MenuItem>
-                <MenuItem>
-                    <text>Open</text>
+                <MenuItem onAction="#exitApp">
+                    <text>Exit</text>
                 </MenuItem>
             </Menu>
             <Menu text="Edit">
@@ -68,15 +76,7 @@
     <center>
         <SplitPane fx:id="splitePane" BorderPane.alignment="CENTER">
             <BorderPane fx:id="leftPane">
-                <top>
-                    <ToolBar fx:id="toolbar" minWidth="0"  prefHeight="30" >
-                        <StackPane fx:id="add" prefHeight="30" prefWidth="30" onMouseClicked="#add">
-                            <ImageView >
-                                <Image url="@/icons/add_16.png"/>
-                            </ImageView>
-                        </StackPane>
-                    </ToolBar>
-                </top>
+
                 <center>
                     <TreeView fx:id="treeView" SplitPane.resizableWithParent="false"/>
                 </center>
