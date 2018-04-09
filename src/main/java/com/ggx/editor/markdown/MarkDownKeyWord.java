@@ -18,18 +18,20 @@ public class MarkDownKeyWord {
 //            ">",">>",">>>","`","`","```","```", "!","---"
 //    };
 //    private static final String KEYWORD_PATTERN = "\\b(" + String.join("|", KEYWORDS) + ")\\b";
-    private static final String WELL_PATTERN="\\b#{0,7}\\b";
+    private static final String WELL_PATTERN="^\\n?#{1,6} ";
     private static final String PAREN_PATTERN = "[()]";
     private static final String BRACE_PATTERN = "[{}]";
-    private static final String BRACKET_PATTERN = "[\\[]]";
+    private static final String BRACKET_PATTERN = "[\\[\\]]";
+    private static final String STRING_PATTERN = "\"([^\"\\\\]|\\\\.)*\"";
 
     private static final Pattern PATTERN = Pattern.compile(
                     /*"(?<KEYWORD>" + KEYWORD_PATTERN + ")"
-                    +*/ "|(?<WELL>" + WELL_PATTERN + ")"
+                    +*/ "(?<WELL>" + WELL_PATTERN + ")"
                     + "|(?<PAREN>" + PAREN_PATTERN + ")"
                     + "|(?<BRACE>" + BRACE_PATTERN + ")"
                     + "|(?<BRACKET>" + BRACKET_PATTERN + ")"
-    );
+                    + "|(?<STRING>" + STRING_PATTERN + ")"
+    ,Pattern.MULTILINE);
 
 
     public static Task<StyleSpans<Collection<String>>> computeHighlightingAsync(ExecutorService executor,CodeArea area) {
@@ -55,6 +57,7 @@ public class MarkDownKeyWord {
                     matcher.group("WELL")!=null?"keyword":
                     matcher.group("PAREN") != null ? "paren" :
                     matcher.group("BRACE") != null ? "brace" :
+                    matcher.group("STRING") != null ? "string" :
                     matcher.group("BRACKET") != null ? "bracket" :
                     null; /* never happens */ assert styleClass != null;
             spansBuilder.add(Collections.emptyList(), matcher.start() - lastKwEnd);
@@ -63,7 +66,6 @@ public class MarkDownKeyWord {
         }
         spansBuilder.add(Collections.emptyList(), text.length() - lastKwEnd);
         StyleSpans<Collection<String>> ss=spansBuilder.create();
-        System.out.println(ss);
         return ss;
     }
 }

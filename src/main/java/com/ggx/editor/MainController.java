@@ -69,10 +69,6 @@ public class MainController implements Initializable, TreeListAction {
     private MarkDownEditorPane markDownEditorPane;
 
 
-    public void setExecutor(ExecutorService executor){
-        markDownEditorPane.setExecutor(executor);
-    }
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         markDownPreview=new MarkDownPreviewPane();

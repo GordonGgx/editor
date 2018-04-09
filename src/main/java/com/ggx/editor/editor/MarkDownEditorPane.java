@@ -1,5 +1,6 @@
 package com.ggx.editor.editor;
 
+import com.ggx.editor.Main;
 import com.ggx.editor.markdown.MarkDownKeyWord;
 import com.ggx.editor.options.Options;
 import com.vladsch.flexmark.ast.Node;
@@ -39,12 +40,6 @@ public class MarkDownEditorPane {
     private ReadOnlyObjectWrapper<Node> markDownAST=new ReadOnlyObjectWrapper<>();
     private ReadOnlyStringWrapper markDownText=new ReadOnlyStringWrapper();
 
-    private ExecutorService executor;
-
-    public void setExecutor(ExecutorService executor){
-        this.executor=executor;
-    }
-
     public MarkDownEditorPane() {
         textArea=new CodeArea();
         textArea.setWrapText(true);
@@ -81,7 +76,7 @@ public class MarkDownEditorPane {
         textArea.richChanges()
                 .filter(ch -> !ch.getInserted().equals(ch.getRemoved()))
                 .successionEnds(Duration.ofMillis(1000))
-                .supplyTask(()-> MarkDownKeyWord.computeHighlightingAsync(executor,textArea))
+                .supplyTask(()-> MarkDownKeyWord.computeHighlightingAsync(Main.getExecutor(),textArea))
                 .awaitLatest(textArea.richChanges())
                 .filterMap(t -> {
                     if(t.isSuccess()) {
@@ -93,7 +88,6 @@ public class MarkDownEditorPane {
                 })
                 .subscribe(styleSpans -> {
                     //应用高亮样式
-                    System.out.println(styleSpans);
                     textArea.setStyleSpans(0, styleSpans);
                 });
 
@@ -113,7 +107,6 @@ public class MarkDownEditorPane {
         Node node=parseMarkDown(newText);
         markDownText.set(newText);
         markDownAST.set(node);
-        System.out.println(node);
     }
 
     private Node parseMarkDown(String text){
