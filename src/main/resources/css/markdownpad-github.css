@@ -277,6 +277,7 @@ hr {
 
 /* TABLES
 =============================================================================*/
+table{border:0;margin:0;border-collapse:collapse;border-spacing:0;}
 
 table th {
   font-weight: bold;
@@ -292,9 +293,10 @@ table tr {
   background-color: #fff;
 }
 
-table tr:nth-child(2n) {
+table  tr:nth-child(2n) {
   background-color: #f8f8f8;
 }
+table tbody tr:hover{background-color: #dafdf3;}
 
 /* IMAGES
 =============================================================================*/

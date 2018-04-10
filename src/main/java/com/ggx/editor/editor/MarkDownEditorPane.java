@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
 
 public class MarkDownEditorPane {
 
@@ -47,7 +46,7 @@ public class MarkDownEditorPane {
 //        textArea.getStyleClass().add("markdown-editor");
 //        textArea.getStylesheets().add("css/MarkdownEditor.css");
 //        textArea.getStylesheets().add("css/prism.css");
-        textArea.getStylesheets().add("css/java-keywords.css");
+        textArea.getStylesheets().add("css/md-keywords.css");
         textArea.setParagraphGraphicFactory(LineNumberFactory.get(textArea));
 
         textSize.addListener((observable, oldValue, newValue) -> textArea.setStyle("-fx-font-size:"+newValue));
@@ -75,7 +74,7 @@ public class MarkDownEditorPane {
         //keyworlds lighheith
         textArea.richChanges()
                 .filter(ch -> !ch.getInserted().equals(ch.getRemoved()))
-                .successionEnds(Duration.ofMillis(1000))
+                .successionEnds(Duration.ofMillis(500))
                 .supplyTask(()-> MarkDownKeyWord.computeHighlightingAsync(Main.getExecutor(),textArea))
                 .awaitLatest(textArea.richChanges())
                 .filterMap(t -> {
