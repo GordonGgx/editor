@@ -1,6 +1,6 @@
 group 'com.ggx.editor'
 version '1.0-SNAPSHOT'
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile.class) {
     options.encoding = "UTF-8"
 }
 buildscript {
@@ -29,7 +29,7 @@ repositories {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     compile project(':richtextfx')
-    compile 'com.jfoenix:jfoenix:1.10.0'
+    compile 'com.jfoenix:jfoenix:8.0.3'
     def flexmarkVersion = '0.28.32'
     compile 'com.vladsch.flexmark:flexmark:' + flexmarkVersion
     compile 'com.vladsch.flexmark:flexmark-util:' + flexmarkVersion
@@ -84,7 +84,7 @@ jfx {
     needMenu = false
     bundleArguments = [
             // dont bundle JRE (not recommended, but increases build-size/-speed)
-            runtime: "D:\\Program Files\\Java\\jre1.8.0_162"
+            runtime: "D:\\Program Files\\Java\\jre1.8.0_131"
     ]
     appName = "mdEditor" // this is used for files below "src/main/deploy", e.g. "src/main/deploy/package/windows/project.ico"
     additionalBundlerResources = null // path to some additional resources for the bundlers when creating application-bundle

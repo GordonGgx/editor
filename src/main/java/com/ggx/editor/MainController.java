@@ -5,6 +5,9 @@ import com.ggx.editor.interfaces.TreeListAction;
 import com.ggx.editor.preview.MarkDownPreviewPane;
 import com.ggx.editor.utils.FileUtil;
 import com.ggx.editor.widget.TextFieldTreeCellImpl;
+import com.jfoenix.controls.JFXButton;
+import com.jfoenix.controls.JFXDialog;
+import com.jfoenix.controls.JFXDialogLayout;
 import com.jfoenix.controls.JFXHamburger;
 import com.jfoenix.transitions.hamburger.HamburgerBackArrowBasicTransition;
 import javafx.event.ActionEvent;
@@ -18,6 +21,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import org.reactfx.EventStreams;
@@ -28,11 +32,12 @@ import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
 public class MainController implements Initializable, TreeListAction {
 
+    @FXML
+    public StackPane root;
     @FXML
     public BorderPane rootPane;
     @FXML
@@ -57,6 +62,10 @@ public class MainController implements Initializable, TreeListAction {
     public HBox toggleContainer;
     @FXML
     public MenuItem save;
+    @FXML
+    public JFXDialog dialog;
+    @FXML
+    public JFXButton acceptButton;
 
     private final Image folderIcon = new Image(ClassLoader.getSystemResourceAsStream("icons/folder_16.png"));
     private final Image fileIcon = new Image(ClassLoader.getSystemResourceAsStream("icons/file_16.png"));
@@ -293,7 +302,9 @@ public class MainController implements Initializable, TreeListAction {
 
     @FXML
     public void aboutAction(ActionEvent actionEvent) {
-        System.out.println("about meun");
+        acceptButton.setOnAction(event -> dialog.close());
+        dialog.setTransitionType(JFXDialog.DialogTransition.TOP);
+        dialog.show(root);
     }
 
     @FXML

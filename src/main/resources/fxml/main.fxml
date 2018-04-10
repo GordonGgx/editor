@@ -7,14 +7,20 @@
 <?import javafx.scene.input.KeyCodeCombination?>
 <?import javafx.scene.layout.*?>
 <?import java.net.URL?>
-<BorderPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:id="rootPane"
-            fx:controller="com.ggx.editor.MainController"
-            prefHeight="600.0" prefWidth="900.0">
+<?import com.jfoenix.controls.JFXDialog?>
+<?import com.jfoenix.controls.JFXDialogLayout?>
+<?import com.jfoenix.controls.JFXButton?>
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:id="root"
+           fx:controller="com.ggx.editor.MainController">
     <stylesheets>
         <URL value="@/css/main-css.css"/>
     </stylesheets>
+    <BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:id="rootPane"
+            prefHeight="600.0" prefWidth="900.0">
     <top>
         <MenuBar>
             <Menu text="File">
@@ -68,7 +74,7 @@
                 <MenuItem onAction="#aboutAction">
                     <text>About</text>
                     <accelerator>
-                        <KeyCodeCombination alt="UP" code="A" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                        <KeyCodeCombination alt="UP" code="A" control="DOWN" meta="UP" shift="DOWN" shortcut="UP"/>
                     </accelerator>
                 </MenuItem>
             </Menu>
@@ -149,3 +155,19 @@
         </StackPane>
     </bottom>
 </BorderPane>
+    <JFXDialog fx:id="dialog">
+        <JFXDialogLayout>
+            <heading>
+                <Label>About Editor</Label>
+            </heading>
+            <body>
+                <Label>测试测试测试面板
+                </Label>
+            </body>
+            <actions>
+                <JFXButton fx:id="acceptButton" styleClass="dialog-accept">ACCEPT
+                </JFXButton>
+            </actions>
+        </JFXDialogLayout>
+    </JFXDialog>
+</StackPane>
