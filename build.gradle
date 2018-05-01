@@ -30,10 +30,10 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     compile project(':richtextfx')
     compile 'com.jfoenix:jfoenix:8.0.3'
-    def flexmarkVersion = '0.28.32'
-    compile 'com.vladsch.flexmark:flexmark:' + flexmarkVersion
-    compile 'com.vladsch.flexmark:flexmark-util:' + flexmarkVersion
-    compile 'com.vladsch.flexmark:flexmark-ext-tables:' + flexmarkVersion
+    def flexmarkVersion = '0.32.18'
+    compile 'com.vladsch.flexmark:flexmark-all:' + flexmarkVersion
+//    compile 'com.vladsch.flexmark:flexmark-util:' + flexmarkVersion
+//    compile 'com.vladsch.flexmark:flexmark-ext-tables:' + flexmarkVersion
 //    compile 'com.vladsch.flexmark:flexmark-ext-abbreviation:' + flexmarkVersion
 //    compile 'com.vladsch.flexmark:flexmark-ext-anchorlink:' + flexmarkVersion
 //    compile 'com.vladsch.flexmark:flexmark-ext-aside:' + flexmarkVersion
@@ -84,7 +84,7 @@ jfx {
     needMenu = false
     bundleArguments = [
             // dont bundle JRE (not recommended, but increases build-size/-speed)
-            runtime: "D:\\Program Files\\Java\\jre1.8.0_131"
+            runtime: "D:\\Program Files\\Java\\jre1.8.0_162"
     ]
     appName = "mdEditor" // this is used for files below "src/main/deploy", e.g. "src/main/deploy/package/windows/project.ico"
     additionalBundlerResources = null // path to some additional resources for the bundlers when creating application-bundle

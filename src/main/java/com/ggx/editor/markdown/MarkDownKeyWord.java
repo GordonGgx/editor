@@ -18,6 +18,8 @@ public class MarkDownKeyWord {
     private static final String ORDERED_LIST_PATTERN ="^\\s*\\d+\\. ";
     private static final String PARAGRAPH_PATTERN ="^\\n?(>\\s*)+";
     private static final String CODE_LINE_PATTERN ="[`]|[`]{3}";
+    private static final String BOLD_PATTERN ="\\*\\*\\w+\\*\\*";
+    private static final String ITALIC_PATTERN="\\*\\w+\\*";
     private static final String PAREN_PATTERN = "[()]";
     private static final String BRACE_PATTERN = "[{}]";
     private static final String BRACKET_PATTERN = "[\\[\\]]";
@@ -29,6 +31,8 @@ public class MarkDownKeyWord {
                        + "|(?<OLP>" + ORDERED_LIST_PATTERN + ")"
                        + "|(?<PARAGRAPH>" + PARAGRAPH_PATTERN + ")"
                        + "|(?<CODELINE>" + CODE_LINE_PATTERN + ")"
+                       + "|(?<BOLD>" + BOLD_PATTERN + ")"
+                       + "|(?<ITALIC>" + ITALIC_PATTERN + ")"
                        + "|(?<PAREN>" + PAREN_PATTERN + ")"
                        + "|(?<BRACE>" + BRACE_PATTERN + ")"
                        + "|(?<BRACKET>" + BRACKET_PATTERN + ")"
@@ -57,6 +61,8 @@ public class MarkDownKeyWord {
             String styleClass =
                     matcher.group("WELL")!=null?"keyword":
                     matcher.group("ULP")!=null?"keyword":
+                    matcher.group("BOLD")!=null?"keyword":
+                    matcher.group("ITALIC")!=null?"keyword":
                     matcher.group("OLP")!=null?"ol":
                     matcher.group("PARAGRAPH")!=null?"ol":
                     matcher.group("CODELINE")!=null?"code_line":
