@@ -128,3 +128,10 @@
     -fx-font-weight: BOLD;
     -fx-padding: 0.7em 0.8em;
 }
+
+/*textField*/
+.text-field{
+    -fx-border-radius: 0;
+    -fx-border-color: #BDBDBD;
+    -fx-border-insets: 0;
+}

@@ -5,16 +5,11 @@ import com.ggx.editor.markdown.MarkDownKeyWord;
 import com.ggx.editor.options.Options;
 import com.vladsch.flexmark.Extension;
 import com.vladsch.flexmark.ast.Node;
-import com.vladsch.flexmark.ext.anchorlink.AnchorLink;
 import com.vladsch.flexmark.ext.anchorlink.AnchorLinkExtension;
 import com.vladsch.flexmark.ext.footnotes.FootnoteExtension;
 import com.vladsch.flexmark.ext.tables.TablesExtension;
 import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.parser.ParserEmulationProfile;
-import com.vladsch.flexmark.profiles.pegdown.Extensions;
-import com.vladsch.flexmark.profiles.pegdown.PegdownOptionsAdapter;
-import com.vladsch.flexmark.util.options.DataHolder;
-import com.vladsch.flexmark.util.options.MutableDataHolder;
 import com.vladsch.flexmark.util.options.MutableDataSet;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -34,7 +29,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,7 +49,7 @@ public class MarkDownEditorPane {
         textArea.setUseInitialStyleForInsertion(true);
 //        textArea.getStyleClass().add("markdown-editor");
 //        textArea.getStylesheets().add("css/MarkdownEditor.css");
-//        textArea.getStylesheets().add("css/prism.css");
+        textArea.getStylesheets().add("css/prism.css");
         textArea.getStylesheets().add("css/md-keywords.css");
         textArea.setParagraphGraphicFactory(LineNumberFactory.get(textArea));
 

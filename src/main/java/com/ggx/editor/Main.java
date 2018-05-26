@@ -39,10 +39,10 @@ public class Main extends Application{
         primaryStage.setTitle("Editor");
         FXMLLoader loader=new FXMLLoader(ClassLoader.getSystemResource("fxml/main.fxml"));
         Parent root=loader.load();
-//        MainController controller=loader.getController();
         Scene scene=new Scene(root);
         scene.setFill(Color.GHOSTWHITE);
         primaryStage.setScene(scene);
+        primaryStage.setMaximized(true);
         primaryStage.show();
     }
 

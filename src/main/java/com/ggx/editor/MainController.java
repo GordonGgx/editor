@@ -7,21 +7,18 @@ import com.ggx.editor.utils.FileUtil;
 import com.ggx.editor.widget.TextFieldTreeCellImpl;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXDialog;
-import com.jfoenix.controls.JFXDialogLayout;
 import com.jfoenix.controls.JFXHamburger;
 import com.jfoenix.transitions.hamburger.HamburgerBackArrowBasicTransition;
-import javafx.event.ActionEvent;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
-import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import org.reactfx.EventStreams;
@@ -36,36 +33,25 @@ import java.util.function.Consumer;
 
 public class MainController implements Initializable, TreeListAction {
 
-    @FXML
-    public StackPane root;
-    @FXML
-    public BorderPane rootPane;
-    @FXML
-    public TreeView<File> treeView;
-    @FXML
-    public StackPane fileContainer;
-    @FXML
-    public SplitPane splitePane;
-    @FXML
-    public JFXHamburger jfxHamburger;
-    @FXML
-    public StackPane leftBtn;
-    @FXML
-    public Label title;
-    @FXML
-    public BorderPane leftPane;
-    @FXML
-    public BorderPane rightPane;
-    @FXML
-    public ToggleGroup toggle;
-    @FXML
-    public HBox toggleContainer;
-    @FXML
-    public MenuItem save;
-    @FXML
-    public JFXDialog dialog;
-    @FXML
-    public JFXButton acceptButton;
+    @FXML public StackPane root;
+    @FXML public BorderPane rootPane;
+    @FXML public TreeView<File> treeView;
+    @FXML public StackPane fileContainer;
+    @FXML public SplitPane splitePane;
+    @FXML public JFXHamburger jfxHamburger;
+    @FXML public StackPane leftBtn;
+    @FXML public Label title;
+    @FXML public BorderPane leftPane;
+    @FXML public BorderPane rightPane;
+    @FXML public ToggleGroup toggle;
+    @FXML public HBox toggleContainer;
+    @FXML public MenuItem save;
+    @FXML public JFXDialog dialog;
+    @FXML public JFXButton acceptButton;
+    @FXML public ToolBar titleBar;
+    @FXML public StackPane searchContainer;
+    @FXML public MenuItem findMenu;
+    @FXML public StackPane editorContainer;
 
     private final Image folderIcon = new Image(ClassLoader.getSystemResourceAsStream("icons/folder_16.png"));
     private final Image fileIcon = new Image(ClassLoader.getSystemResourceAsStream("icons/file_16.png"));
@@ -105,7 +91,7 @@ public class MainController implements Initializable, TreeListAction {
             switch (rb.getId()) {
                 case "editor":
                     rightPane.setRight(null);
-                    rightPane.setCenter(fileContainer);
+                    rightPane.setCenter(editorContainer);
                     break;
                 case "eye":
                     rightPane.setCenter(null);
@@ -113,7 +99,7 @@ public class MainController implements Initializable, TreeListAction {
                     rightPane.setRight(markDownPreview.getPreviewNode());
                     break;
                 case "realTime":
-                    rightPane.setCenter(fileContainer);
+                    rightPane.setCenter(editorContainer);
                     markDownPreview.setWidth((rootPane.getWidth() - leftPane.getWidth()) / 2);
                     rightPane.setRight(markDownPreview.getPreviewNode());
                     break;
@@ -124,6 +110,11 @@ public class MainController implements Initializable, TreeListAction {
         markDownPreview.markdownASTProperty().bind(markDownEditorPane.markDownASTProperty());
         markDownPreview.scrollYProperty().bind(markDownEditorPane.scrollYProperty());
         markDownPreview.editorSelectionProperty().bind(markDownEditorPane.selectionProperty());
+//        KeyCodeCombination codeCombination=new KeyCodeCombination(KeyCode.F,KeyCombination.SHORTCUT_DOWN);
+//        EventStreams.eventsOf(Main.get(),KeyEvent.KEY_PRESSED)
+//                .filter(codeCombination::match).subscribe(keyEvent -> {
+//
+//        });
     }
 
     private void searchFile(File fileOrDir, TreeItem<File> rootItem) {
@@ -150,7 +141,7 @@ public class MainController implements Initializable, TreeListAction {
     }
 
     @FXML
-    public void doBack(MouseEvent mouseEvent) {
+    public void doBack() {
         burgerTask3.setRate(burgerTask3.getRate() * -1);
         burgerTask3.play();
         int size = splitePane.getItems().size();
@@ -171,7 +162,10 @@ public class MainController implements Initializable, TreeListAction {
             return;
         }
         save.setDisable(false);
+        findMenu.setDisable(false);
         currentFile = file;
+        titleBar.setVisible(true);
+        titleBar.setManaged(true);
         title.setText(FileUtil.prefixName(file) + " " + DateFormat.getDateInstance(DateFormat.DEFAULT, Locale.CHINESE).format(file.lastModified()));
         if (file.getName().endsWith(".md")) {
             title.setGraphic(new ImageView(new Image(ClassLoader.getSystemResourceAsStream("icons/md_24.png"))));
@@ -253,15 +247,7 @@ public class MainController implements Initializable, TreeListAction {
         DirectoryChooser chooser=new DirectoryChooser();
         File dir=chooser.showDialog(Main.get());
         if(dir!=null&&dir.exists()){
-            //关闭面板
-            if (fileContainer.getChildren().size() == 2) {
-                fileContainer.getChildren().remove(1);
-            }
-            title.setText(null);
-            title.setGraphic(null);
-            currentFile=null;
-            save.setDisable(true);
-            toggleContainer.setVisible(false);
+            clear();
             ImageView iv = new ImageView(folderIcon);
             iv.setSmooth(true);
             iv.setViewport(new Rectangle2D(0, 0, 16, 16));
@@ -280,6 +266,7 @@ public class MainController implements Initializable, TreeListAction {
         if(!dir.exists()){
             if(dir.mkdir()){
                 System.out.println("创建成功");
+                clear();
                 ImageView iv = new ImageView(folderIcon);
                 iv.setSmooth(true);
                 iv.setViewport(new Rectangle2D(0, 0, 16, 16));
@@ -296,21 +283,86 @@ public class MainController implements Initializable, TreeListAction {
     }
 
     @FXML
-    public void exitApp(ActionEvent actionEvent) {
+    public void exitApp() {
+        if(currentFile!=null&&currentFile.exists()){
+            markDownEditorPane.saveFile(currentFile);
+        }
         Main.get().close();
+        Platform.exit();
     }
 
     @FXML
-    public void aboutAction(ActionEvent actionEvent) {
+    public void aboutAction() {
         acceptButton.setOnAction(event -> dialog.close());
         dialog.setTransitionType(JFXDialog.DialogTransition.TOP);
         dialog.show(root);
     }
 
     @FXML
-    public void onSaveAction(ActionEvent actionEvent) {
+    public void onSaveAction() {
         if(currentFile!=null&&currentFile.exists()){
             markDownEditorPane.saveFile(currentFile);
         }
+    }
+    //关闭面板并清理一些东西
+    private void clear(){
+        if (fileContainer.getChildren().size() == 2) {
+            fileContainer.getChildren().remove(1);
+        }
+        titleBar.setVisible(false);
+        titleBar.setManaged(false);
+        title.setText(null);
+        title.setGraphic(null);
+        currentFile=null;
+        save.setDisable(true);
+        findMenu.setDisable(true);
+        toggleContainer.setVisible(false);
+    }
+
+    @FXML
+    public void findOn() {
+        System.out.println("dsadsa");
+        if(currentFile==null){
+            return;
+        }
+        if(!searchContainer.isVisible()){
+            searchContainer.setVisible(true);
+        }
+    }
+
+    @FXML
+    public void closeFind() {
+        if(searchContainer.isVisible()){
+            searchContainer.setVisible(false);
+        }
+    }
+
+    @FXML
+    public void changeEditor() {
+        if(currentFile==null){
+            return;
+        }
+        toggle.selectToggle(toggle.getToggles().get(0));
+    }
+
+    @FXML
+    public void changeEye() {
+        if(currentFile==null){
+            return;
+        }
+        toggle.selectToggle(toggle.getToggles().get(1));
+    }
+
+    @FXML
+    public void changePreview() {
+        if(currentFile==null){
+            return;
+        }
+        toggle.selectToggle(toggle.getToggles().get(2));
+    }
+
+    @FXML
+    public void openSettings() {
+
     }
 }

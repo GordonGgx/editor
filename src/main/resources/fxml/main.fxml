@@ -18,143 +18,248 @@
         <URL value="@/css/main-css.css"/>
     </stylesheets>
     <BorderPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:id="rootPane"
-            prefHeight="600.0" prefWidth="900.0">
-    <top>
-        <MenuBar>
-            <Menu text="File">
-                <Menu>
-                    <text>New</text>
-                    <MenuItem onAction="#createDir">
-                        <text>New WorkSpace...</text>
+                xmlns:fx="http://javafx.com/fxml"
+                fx:id="rootPane"
+                prefHeight="700.0" prefWidth="900.0">
+        <top>
+            <MenuBar>
+
+                <Menu text="File">
+                    <Menu>
+                        <text>New</text>
+                        <MenuItem onAction="#createDir">
+                            <text>New WorkSpace...</text>
+                        </MenuItem>
+                    </Menu>
+                    <MenuItem onAction="#openDir">
+                        <text>Open</text>
+                        <graphic>
+                            <ImageView>
+                                <Image url="@/icons/open_16.png"/>
+                            </ImageView>
+                        </graphic>
+                    </MenuItem>
+                    <MenuItem fx:id="save" onAction="#onSaveAction" disable="true">
+                        <text>Save</text>
+                        <accelerator>
+                            <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                        </accelerator>
+                        <graphic>
+                            <ImageView>
+                                <Image url="@/icons/save_16.png"/>
+                            </ImageView>
+                        </graphic>
+                    </MenuItem>
+                    <SeparatorMenuItem/>
+                    <MenuItem onAction="#exitApp">
+                        <text>Exit</text>
                     </MenuItem>
                 </Menu>
-                <MenuItem onAction="#openDir">
-                    <text>Open</text>
-                    <graphic>
-                        <ImageView>
-                            <Image url="@/icons/open_16.png"/>
-                        </ImageView>
-                    </graphic>
-                </MenuItem>
-                <MenuItem fx:id="save" onAction="#onSaveAction" disable="true">
-                    <text>Save</text>
-                    <accelerator>
-                        <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
-                    </accelerator>
-                </MenuItem>
-                <MenuItem onAction="#exitApp">
-                    <text>Exit</text>
-                </MenuItem>
-            </Menu>
-            <Menu text="Edit">
-                <MenuItem>
-                    <text>Open</text>
-                </MenuItem>
-                <MenuItem>
-                    <text>Open</text>
-                </MenuItem>
-                <MenuItem>
-                    <text>Open</text>
-                </MenuItem>
-            </Menu>
-            <Menu text="View">
-                <MenuItem>
-                    <text>Open</text>
-                </MenuItem>
-                <MenuItem>
-                    <text>Edit</text>
-                </MenuItem>
-                <MenuItem>
-                    <text>View</text>
-                </MenuItem>
-            </Menu>
-            <Menu text="Help">
-                <MenuItem onAction="#aboutAction">
-                    <text>About</text>
-                    <accelerator>
-                        <KeyCodeCombination alt="UP" code="A" control="DOWN" meta="UP" shift="DOWN" shortcut="UP"/>
-                    </accelerator>
-                </MenuItem>
-            </Menu>
 
-        </MenuBar>
-    </top>
-    <center>
-        <SplitPane fx:id="splitePane" BorderPane.alignment="CENTER">
-            <BorderPane fx:id="leftPane">
+                <Menu text="Edit">
+                    <MenuItem fx:id="findMenu" onAction="#findOn" disable="true">
+                        <accelerator>
+                            <KeyCodeCombination alt="UP" code="F" control="DOWN" meta="UP" shift="UP" shortcut="DOWN"/>
+                        </accelerator>
+                        <text>Find</text>
+                        <graphic>
+                            <ImageView>
+                                <Image url="@/icons/search_16.png"/>
+                            </ImageView>
+                        </graphic>
+                    </MenuItem>
+                    <MenuItem>
+                        <text>Cut</text>
+                        <graphic>
+                            <ImageView>
+                                <Image url="@/icons/cut_16.png"/>
+                            </ImageView>
+                        </graphic>
+                        <accelerator>
+                            <KeyCodeCombination alt="UP" code="X" control="DOWN" meta="UP" shift="UP" shortcut="DOWN"/>
+                        </accelerator>
+                    </MenuItem>
+                    <MenuItem>
+                        <text>Copy</text>
+                        <graphic>
+                            <ImageView>
+                                <Image url="@/icons/copy_16.png"/>
+                            </ImageView>
+                        </graphic>
+                        <accelerator>
+                            <KeyCodeCombination alt="UP" code="C" control="DOWN" meta="UP" shift="UP" shortcut="DOWN"/>
+                        </accelerator>
+                    </MenuItem>
+                    <MenuItem>
+                        <text>Paste</text>
+                        <graphic>
+                            <ImageView>
+                                <Image url="@/icons/paste_16.png"/>
+                            </ImageView>
+                        </graphic>
+                        <accelerator>
+                            <KeyCodeCombination alt="UP" code="V" control="DOWN" meta="UP" shift="UP" shortcut="DOWN"/>
+                        </accelerator>
+                    </MenuItem>
+                </Menu>
 
-                <center>
-                    <TreeView fx:id="treeView" SplitPane.resizableWithParent="false"/>
-                </center>
-            </BorderPane>
-            <BorderPane fx:id="rightPane">
-                <top>
-                    <VBox style="-fx-background-color:#F2F2F2">
-                        <StackPane style="-fx-background-color:#F2F2F2" prefHeight="30">
-                            <StackPane fx:id="leftBtn" onMouseClicked="#doBack" StackPane.alignment="CENTER_LEFT"
-                                       prefWidth="40" prefHeight="30" maxWidth="40">
-                                <JFXHamburger fx:id="jfxHamburger">
-                                    <StackPane.margin>
-                                        <Insets left="10" right="10"/>
-                                    </StackPane.margin>
-                                </JFXHamburger>
+                <Menu text="View">
+                    <MenuItem onAction="#changeEditor">
+                        <text>Editor</text>
+                        <graphic>
+                            <ImageView>
+                                <Image url="@/icons/edit_16.png"/>
+                            </ImageView>
+                        </graphic>
+                        <accelerator>
+                            <KeyCodeCombination alt="UP" code="E" control="DOWN" meta="UP" shift="DOWN" shortcut="UP"/>
+                        </accelerator>
+                    </MenuItem>
+                    <MenuItem onAction="#changeEye">
+                        <text>Eye</text>
+                        <graphic>
+                            <ImageView>
+                                <Image url="@/icons/eye_16.png"/>
+                            </ImageView>
+                        </graphic>
+                        <accelerator>
+                            <KeyCodeCombination alt="UP" code="R" control="DOWN" meta="UP" shift="DOWN" shortcut="UP"/>
+                        </accelerator>
+                    </MenuItem>
+                    <MenuItem onAction="#changePreview">
+                        <text>Preview</text>
+                        <graphic>
+                            <ImageView>
+                                <Image url="@/icons/reader_16.png"/>
+                            </ImageView>
+                        </graphic>
+                        <accelerator>
+                            <KeyCodeCombination alt="UP" code="P" control="DOWN" meta="UP" shift="DOWN" shortcut="UP"/>
+                        </accelerator>
+                    </MenuItem>
+                </Menu>
+                <Menu text="Help">
+                    <MenuItem onAction="#openSettings">
+                        <text>Settings</text>
+                        <accelerator>
+                            <KeyCodeCombination alt="DOWN" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                        </accelerator>
+                        <graphic>
+                            <ImageView>
+                                <Image url="@/icons/settings_16.png"/>
+                            </ImageView>
+                        </graphic>
+                    </MenuItem>
+                    <MenuItem onAction="#aboutAction">
+                        <text>About</text>
+                        <accelerator>
+                            <KeyCodeCombination alt="UP" code="A" control="DOWN" meta="UP" shift="DOWN" shortcut="UP"/>
+                        </accelerator>
+                    </MenuItem>
+                </Menu>
+
+            </MenuBar>
+        </top>
+        <center>
+            <SplitPane fx:id="splitePane" BorderPane.alignment="CENTER">
+                <BorderPane fx:id="leftPane">
+
+                    <center>
+                        <TreeView fx:id="treeView" SplitPane.resizableWithParent="false"/>
+                    </center>
+                </BorderPane>
+                <BorderPane fx:id="rightPane">
+                    <top>
+                        <VBox style="-fx-background-color:#F2F2F2">
+                            <StackPane style="-fx-background-color:#F2F2F2" prefHeight="30">
+                                <StackPane fx:id="leftBtn" onMouseClicked="#doBack" StackPane.alignment="CENTER_LEFT"
+                                           prefWidth="40" prefHeight="30" maxWidth="40">
+                                    <JFXHamburger fx:id="jfxHamburger">
+                                        <StackPane.margin>
+                                            <Insets left="10" right="10"/>
+                                        </StackPane.margin>
+                                    </JFXHamburger>
+                                </StackPane>
+                                <fx:define>
+                                    <ToggleGroup fx:id="toggle"/>
+                                </fx:define>
+                                <HBox fx:id="toggleContainer" visible="false" alignment="CENTER"
+                                      StackPane.alignment="CENTER" maxHeight="15" maxWidth="150" prefHeight="20">
+                                    <RadioButton fx:id="editor" toggleGroup="$toggle" prefWidth="50" selected="true"
+                                                 alignment="CENTER">
+                                        <graphic>
+                                            <ImageView>
+                                                <Image url="@/icons/edit_16.png"/>
+                                            </ImageView>
+                                        </graphic>
+                                    </RadioButton>
+                                    <RadioButton fx:id="eye" toggleGroup="$toggle" prefWidth="50" alignment="CENTER">
+                                        <graphic>
+                                            <ImageView>
+                                                <Image url="@/icons/eye_16.png"/>
+                                            </ImageView>
+                                        </graphic>
+                                    </RadioButton>
+                                    <RadioButton fx:id="realTime" toggleGroup="$toggle" prefWidth="50"
+                                                 alignment="CENTER">
+                                        <graphic>
+                                            <ImageView>
+                                                <Image url="@/icons/reader_16.png"/>
+                                            </ImageView>
+                                        </graphic>
+                                    </RadioButton>
+                                </HBox>
                             </StackPane>
-                            <fx:define>
-                                <ToggleGroup fx:id="toggle"/>
-                            </fx:define>
-                            <HBox fx:id="toggleContainer" visible="false"  alignment="CENTER" StackPane.alignment="CENTER" maxHeight="15" maxWidth="150" prefHeight="20">
-                                <RadioButton fx:id="editor" toggleGroup="$toggle" prefWidth="50" selected="true" alignment="CENTER">
-                                    <graphic >
-                                        <ImageView>
-                                            <Image url="@/icons/edit_16.png" />
-                                        </ImageView>
-                                    </graphic>
-                                </RadioButton>
-                                <RadioButton fx:id="eye" toggleGroup="$toggle" prefWidth="50" alignment="CENTER">
-                                    <graphic >
-                                        <ImageView>
-                                            <Image url="@/icons/eye_16.png" />
-                                        </ImageView>
-                                    </graphic>
-                                </RadioButton>
-                                <RadioButton fx:id="realTime" toggleGroup="$toggle" prefWidth="50" alignment="CENTER">
-                                    <graphic >
-                                        <ImageView>
-                                            <Image url="@/icons/reader_16.png" />
-                                        </ImageView>
-                                    </graphic>
-                                </RadioButton>
-                            </HBox>
+                            <Separator orientation="HORIZONTAL"/>
+                            <ToolBar prefHeight="35" fx:id="titleBar" visible="false" managed="false">
+                                <Label fx:id="title"/>
+                            </ToolBar>
+                        </VBox>
+                    </top>
+
+                    <center>
+                        <StackPane fx:id="editorContainer">
+                            <StackPane fx:id="fileContainer" style="-fx-background-color:#B6B6B6;">
+                                <Label fx:id="welcome" text="欢迎" StackPane.alignment="CENTER"/>
+                            </StackPane>
+                            <StackPane
+                                    fx:id="searchContainer"
+                                    maxHeight="50"
+                                    style="-fx-background-color: #F2F2F2"
+                                    StackPane.alignment="TOP_LEFT"
+                                    alignment="CENTER_LEFT" visible="false">
+                                <HBox
+                                    maxWidth="${fileContainer.width}"
+                                    maxHeight="50"
+                                    style="-fx-background-color: #F2F2F2"
+                                    StackPane.alignment="TOP_LEFT"
+                                    alignment="CENTER_LEFT">
+                                    <TextField promptText="search"/>
+                                </HBox>
+                                <ImageView StackPane.alignment="TOP_RIGHT" onMouseClicked="#closeFind">
+                                    <StackPane.margin>
+                                        <Insets top="5" right="5"/>
+                                    </StackPane.margin>
+                                    <Image url="@/icons/close_16.png"/>
+                                </ImageView>
+                            </StackPane>
                         </StackPane>
-                        <Separator orientation="HORIZONTAL"/>
-                        <ToolBar  prefHeight="35" >
-                            <Label fx:id="title"/>
-                        </ToolBar>
-                    </VBox>
-                </top>
+                    </center>
+                    <right>
 
-                <center>
-                    <StackPane fx:id="fileContainer" style="-fx-background-color:#B6B6B6;">
-                        <Label fx:id="welcome" text="欢迎" StackPane.alignment="CENTER"/>
-                    </StackPane>
-                </center>
-                <right>
+                    </right>
+                </BorderPane>
+            </SplitPane>
+        </center>
+        <bottom>
+            <StackPane style="-fx-background-color:#F2F2F2" prefHeight="20">
+                <ImageView StackPane.alignment="CENTER_LEFT">
+                    <Image url="@/icons/information_16.png"/>
+                </ImageView>
 
-                </right>
-            </BorderPane>
-        </SplitPane>
-    </center>
-    <bottom>
-        <StackPane style="-fx-background-color:#F2F2F2" prefHeight="20">
-            <ImageView StackPane.alignment="CENTER_LEFT">
-                <Image url="@/icons/information_16.png"/>
-            </ImageView>
-
-        </StackPane>
-    </bottom>
-</BorderPane>
+            </StackPane>
+        </bottom>
+    </BorderPane>
     <JFXDialog fx:id="dialog">
         <JFXDialogLayout>
             <heading>
