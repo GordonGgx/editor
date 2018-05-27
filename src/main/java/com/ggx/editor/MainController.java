@@ -1,6 +1,7 @@
 package com.ggx.editor;
 
 import com.ggx.editor.editor.MarkDownEditorPane;
+import com.ggx.editor.fileos.FileMonitor;
 import com.ggx.editor.interfaces.TreeListAction;
 import com.ggx.editor.preview.MarkDownPreviewPane;
 import com.ggx.editor.utils.FileUtil;
@@ -31,7 +32,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
 
-public class MainController implements Initializable, TreeListAction {
+public class MainController implements Initializable, TreeListAction,Runnable {
 
     @FXML public StackPane root;
     @FXML public BorderPane rootPane;
@@ -50,8 +51,14 @@ public class MainController implements Initializable, TreeListAction {
     @FXML public JFXButton acceptButton;
     @FXML public ToolBar titleBar;
     @FXML public StackPane searchContainer;
-    @FXML public MenuItem findMenu;
+    @FXML public MenuItem findAction;
     @FXML public StackPane editorContainer;
+    @FXML public MenuItem pasteAction;
+    @FXML public MenuItem copyAction;
+    @FXML public MenuItem cutAction;
+    @FXML public MenuItem editorAction;
+    @FXML public MenuItem eyeAction;
+    @FXML public MenuItem previewAction;
 
     private final Image folderIcon = new Image(ClassLoader.getSystemResourceAsStream("icons/folder_16.png"));
     private final Image fileIcon = new Image(ClassLoader.getSystemResourceAsStream("icons/file_16.png"));
@@ -110,11 +117,7 @@ public class MainController implements Initializable, TreeListAction {
         markDownPreview.markdownASTProperty().bind(markDownEditorPane.markDownASTProperty());
         markDownPreview.scrollYProperty().bind(markDownEditorPane.scrollYProperty());
         markDownPreview.editorSelectionProperty().bind(markDownEditorPane.selectionProperty());
-//        KeyCodeCombination codeCombination=new KeyCodeCombination(KeyCode.F,KeyCombination.SHORTCUT_DOWN);
-//        EventStreams.eventsOf(Main.get(),KeyEvent.KEY_PRESSED)
-//                .filter(codeCombination::match).subscribe(keyEvent -> {
-//
-//        });
+
     }
 
     private void searchFile(File fileOrDir, TreeItem<File> rootItem) {
@@ -161,11 +164,8 @@ public class MainController implements Initializable, TreeListAction {
         if(!file.exists()){
             return;
         }
-        save.setDisable(false);
-        findMenu.setDisable(false);
         currentFile = file;
-        titleBar.setVisible(true);
-        titleBar.setManaged(true);
+        initOpenFile();
         title.setText(FileUtil.prefixName(file) + " " + DateFormat.getDateInstance(DateFormat.DEFAULT, Locale.CHINESE).format(file.lastModified()));
         if (file.getName().endsWith(".md")) {
             title.setGraphic(new ImageView(new Image(ClassLoader.getSystemResourceAsStream("icons/md_24.png"))));
@@ -194,7 +194,7 @@ public class MainController implements Initializable, TreeListAction {
         }
         fileContainer.getChildren().add(markDownEditorPane.getScrollPane());
         markDownEditorPane.getScrollPane().scrollYToPixel(0);
-        toggleContainer.setVisible(true);
+
 
     }
 
@@ -205,7 +205,7 @@ public class MainController implements Initializable, TreeListAction {
             title.setText(null);
             fileContainer.getChildren().remove(1);
             currentFile = null;
-            save.setDisable(false);
+            deleteFileAction();
         }
     }
 
@@ -223,7 +223,7 @@ public class MainController implements Initializable, TreeListAction {
                 fileContainer.getChildren().remove(1);
             }
             currentFile = null;
-            save.setDisable(true);
+            deleteFileAction();
         }
         if (FileUtil.deleteDir(file)) {
             item.getParent().getChildren().remove(item);
@@ -254,6 +254,10 @@ public class MainController implements Initializable, TreeListAction {
             TreeItem<File> rootTree = new TreeItem<>(dir, iv);
             searchFile(dir, rootTree);
             treeView.setRoot(rootTree);
+            FileMonitor.get().stopWatch();
+            FileMonitor.get().addWatchFile(dir);
+            FileMonitor.get().setListener(this);
+            FileMonitor.get().watch();
         }
 
     }
@@ -266,6 +270,7 @@ public class MainController implements Initializable, TreeListAction {
         if(!dir.exists()){
             if(dir.mkdir()){
                 System.out.println("创建成功");
+                FileMonitor.get().addWatchFile(dir);
                 clear();
                 ImageView iv = new ImageView(folderIcon);
                 iv.setSmooth(true);
@@ -304,19 +309,43 @@ public class MainController implements Initializable, TreeListAction {
             markDownEditorPane.saveFile(currentFile);
         }
     }
+    private void initOpenFile(){
+        save.setDisable(false);
+        findAction.setDisable(false);
+        cutAction.setDisable(false);
+        copyAction.setDisable(false);
+        pasteAction.setDisable(false);
+        editorAction.setDisable(false);
+        eyeAction.setDisable(false);
+        previewAction.setDisable(false);
+        titleBar.setVisible(true);
+        titleBar.setManaged(true);
+        toggleContainer.setVisible(true);
+    }
+
+    private void deleteFileAction(){
+        save.setDisable(true);
+        findAction.setDisable(true);
+        cutAction.setDisable(true);
+        copyAction.setDisable(true);
+        pasteAction.setDisable(true);
+        editorAction.setDisable(true);
+        eyeAction.setDisable(true);
+        previewAction.setDisable(true);
+        titleBar.setVisible(false);
+        titleBar.setManaged(false);
+        toggleContainer.setVisible(false);
+    }
+
     //关闭面板并清理一些东西
     private void clear(){
         if (fileContainer.getChildren().size() == 2) {
             fileContainer.getChildren().remove(1);
         }
-        titleBar.setVisible(false);
-        titleBar.setManaged(false);
+        currentFile=null;
+        deleteFileAction();
         title.setText(null);
         title.setGraphic(null);
-        currentFile=null;
-        save.setDisable(true);
-        findMenu.setDisable(true);
-        toggleContainer.setVisible(false);
     }
 
     @FXML
@@ -364,5 +393,49 @@ public class MainController implements Initializable, TreeListAction {
     @FXML
     public void openSettings() {
 
+    }
+
+    @FXML
+    public void onCut() {
+        if(currentFile==null){
+            return;
+        }
+        markDownEditorPane.getTextArea().cut();
+    }
+
+    @FXML
+    public void onCopy() {
+        if(currentFile==null){
+            return;
+        }
+        markDownEditorPane.getTextArea().copy();
+    }
+
+    @FXML
+    public void onPaste() {
+        if(currentFile==null){
+            return;
+        }
+        markDownEditorPane.getTextArea().paste();
+    }
+
+
+    @Override
+    public void run() {
+        TreeItem<File> rootTree=treeView.getRoot();
+        File dir=rootTree.getValue();
+        ImageView iv = new ImageView(folderIcon);
+        iv.setSmooth(true);
+        iv.setViewport(new Rectangle2D(0, 0, 16, 16));
+        TreeItem<File> root = new TreeItem<>(dir, iv);
+        searchFile(dir, root);
+        Platform.runLater(()->{
+            treeView.setRoot(root);
+            root.setExpanded(true);
+        });
+        FileMonitor.get().stopWatch();
+        FileMonitor.get().addWatchFile(dir);
+        FileMonitor.get().setListener(this);
+        FileMonitor.get().watch();
     }
 }

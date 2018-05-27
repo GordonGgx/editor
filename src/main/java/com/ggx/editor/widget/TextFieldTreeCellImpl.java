@@ -134,7 +134,12 @@ public class TextFieldTreeCellImpl extends TreeCell<File> {
         MenuItem deleteDir = new MenuItem("删除");
         addFile.setOnAction((ActionEvent t) -> {
             try {
-                File newFile=new File(getItem(),"newFile.md");
+                File newFile=new File(getItem(),"新建文件.md");
+                int n=1;
+                while (newFile.exists()){
+                    newFile=new File(getItem(),"新建文件("+n+").md");
+                    n++;
+                }
                 if(newFile.createNewFile()){
                     TreeItem<File> newDir = new TreeItem<>(newFile);
                     newDir.setGraphic(new ImageView(new Image(ClassLoader.getSystemResourceAsStream("icons/file_16.png"))));

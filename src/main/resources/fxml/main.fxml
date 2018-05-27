@@ -57,7 +57,7 @@
                 </Menu>
 
                 <Menu text="Edit">
-                    <MenuItem fx:id="findMenu" onAction="#findOn" disable="true">
+                    <MenuItem fx:id="findAction" onAction="#findOn" disable="true">
                         <accelerator>
                             <KeyCodeCombination alt="UP" code="F" control="DOWN" meta="UP" shift="UP" shortcut="DOWN"/>
                         </accelerator>
@@ -68,7 +68,7 @@
                             </ImageView>
                         </graphic>
                     </MenuItem>
-                    <MenuItem>
+                    <MenuItem fx:id="cutAction" onAction="#onCut" disable="true">
                         <text>Cut</text>
                         <graphic>
                             <ImageView>
@@ -79,7 +79,7 @@
                             <KeyCodeCombination alt="UP" code="X" control="DOWN" meta="UP" shift="UP" shortcut="DOWN"/>
                         </accelerator>
                     </MenuItem>
-                    <MenuItem>
+                    <MenuItem fx:id="copyAction" onAction="#onCopy" disable="true">
                         <text>Copy</text>
                         <graphic>
                             <ImageView>
@@ -90,7 +90,7 @@
                             <KeyCodeCombination alt="UP" code="C" control="DOWN" meta="UP" shift="UP" shortcut="DOWN"/>
                         </accelerator>
                     </MenuItem>
-                    <MenuItem>
+                    <MenuItem fx:id="pasteAction" onAction="#onPaste" disable="true">
                         <text>Paste</text>
                         <graphic>
                             <ImageView>
@@ -104,7 +104,7 @@
                 </Menu>
 
                 <Menu text="View">
-                    <MenuItem onAction="#changeEditor">
+                    <MenuItem fx:id="editorAction" onAction="#changeEditor" disable="true">
                         <text>Editor</text>
                         <graphic>
                             <ImageView>
@@ -115,7 +115,7 @@
                             <KeyCodeCombination alt="UP" code="E" control="DOWN" meta="UP" shift="DOWN" shortcut="UP"/>
                         </accelerator>
                     </MenuItem>
-                    <MenuItem onAction="#changeEye">
+                    <MenuItem fx:id="eyeAction" onAction="#changeEye" disable="true">
                         <text>Eye</text>
                         <graphic>
                             <ImageView>
@@ -126,7 +126,7 @@
                             <KeyCodeCombination alt="UP" code="R" control="DOWN" meta="UP" shift="DOWN" shortcut="UP"/>
                         </accelerator>
                     </MenuItem>
-                    <MenuItem onAction="#changePreview">
+                    <MenuItem fx:id="previewAction" onAction="#changePreview" disable="true">
                         <text>Preview</text>
                         <graphic>
                             <ImageView>
@@ -235,6 +235,7 @@
                                     StackPane.alignment="TOP_LEFT"
                                     alignment="CENTER_LEFT">
                                     <TextField promptText="search"/>
+
                                 </HBox>
                                 <ImageView StackPane.alignment="TOP_RIGHT" onMouseClicked="#closeFind">
                                     <StackPane.margin>
@@ -266,7 +267,7 @@
                 <Label>About Editor</Label>
             </heading>
             <body>
-                <Label>测试测试测试面板
+                <Label>完全开源的MarkDown编辑器，仅供学习使用。
                 </Label>
             </body>
             <actions>

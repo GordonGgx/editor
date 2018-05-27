@@ -1,5 +1,6 @@
 package com.ggx.editor;
 
+import com.ggx.editor.fileos.FileMonitor;
 import javafx.application.Application;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
@@ -50,6 +51,7 @@ public class Main extends Application{
     public void stop() throws Exception {
         executor.shutdown();
         main=null;
+        FileMonitor.get().stopWatch();
     }
     public static Stage get(){
         return main;

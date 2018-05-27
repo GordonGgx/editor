@@ -98,7 +98,6 @@ public class MarkDownEditorPane {
         scrollPane=new VirtualizedScrollPane<>(textArea);
         markDownText.set("");
         markDownAST.set(parseMarkDown(""));
-
     }
 
     private String getLineSeparatorOrDefault() {
@@ -168,6 +167,10 @@ public class MarkDownEditorPane {
 
     public VirtualizedScrollPane<CodeArea> getScrollPane() {
         return scrollPane;
+    }
+
+    public CodeArea getTextArea() {
+        return textArea;
     }
 
     public void saveFile(File file){

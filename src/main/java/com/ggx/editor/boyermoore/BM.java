@@ -1,4 +1,4 @@
-package com.ggx.editor;
+package com.ggx.editor.boyermoore;
 
 public class BM {
 
