@@ -17,11 +17,15 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.InputMethodEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import org.reactfx.Change;
 import org.reactfx.EventStreams;
 
 import java.io.*;
@@ -52,13 +56,15 @@ public class MainController implements Initializable, TreeListAction,Runnable {
     @FXML public ToolBar titleBar;
     @FXML public StackPane searchContainer;
     @FXML public MenuItem findAction;
-    @FXML public StackPane editorContainer;
+    @FXML public BorderPane editorContainer;
     @FXML public MenuItem pasteAction;
     @FXML public MenuItem copyAction;
     @FXML public MenuItem cutAction;
     @FXML public MenuItem editorAction;
     @FXML public MenuItem eyeAction;
     @FXML public MenuItem previewAction;
+    @FXML public TextField tfSearch;
+    @FXML public TextField tfReplace;
 
     private final Image folderIcon = new Image(ClassLoader.getSystemResourceAsStream("icons/folder_16.png"));
     private final Image fileIcon = new Image(ClassLoader.getSystemResourceAsStream("icons/file_16.png"));
@@ -117,7 +123,7 @@ public class MainController implements Initializable, TreeListAction,Runnable {
         markDownPreview.markdownASTProperty().bind(markDownEditorPane.markDownASTProperty());
         markDownPreview.scrollYProperty().bind(markDownEditorPane.scrollYProperty());
         markDownPreview.editorSelectionProperty().bind(markDownEditorPane.selectionProperty());
-
+        EventStreams.changesOf(tfSearch.textProperty()).map(Change::getNewValue).subscribe(this::onSearchTextChange);
     }
 
     private void searchFile(File fileOrDir, TreeItem<File> rootItem) {
@@ -254,6 +260,7 @@ public class MainController implements Initializable, TreeListAction,Runnable {
             TreeItem<File> rootTree = new TreeItem<>(dir, iv);
             searchFile(dir, rootTree);
             treeView.setRoot(rootTree);
+            rootTree.setExpanded(true);
             FileMonitor.get().stopWatch();
             FileMonitor.get().addWatchFile(dir);
             FileMonitor.get().setListener(this);
@@ -349,13 +356,13 @@ public class MainController implements Initializable, TreeListAction,Runnable {
     }
 
     @FXML
-    public void findOn() {
-        System.out.println("dsadsa");
+    public void openFind() {
         if(currentFile==null){
             return;
         }
         if(!searchContainer.isVisible()){
             searchContainer.setVisible(true);
+            searchContainer.setManaged(true);
         }
     }
 
@@ -363,6 +370,7 @@ public class MainController implements Initializable, TreeListAction,Runnable {
     public void closeFind() {
         if(searchContainer.isVisible()){
             searchContainer.setVisible(false);
+            searchContainer.setManaged(false);
         }
     }
 
@@ -437,5 +445,20 @@ public class MainController implements Initializable, TreeListAction,Runnable {
         FileMonitor.get().addWatchFile(dir);
         FileMonitor.get().setListener(this);
         FileMonitor.get().watch();
+    }
+
+    @FXML
+    public void searchPreview(MouseEvent mouseEvent) {
+
+    }
+
+    @FXML
+    public void searchNext(MouseEvent mouseEvent) {
+
+    }
+
+
+    private void onSearchTextChange(String text) {
+        //通过bm算法快速查找到文中匹配的字符串的位置，并高亮显示
     }
 }

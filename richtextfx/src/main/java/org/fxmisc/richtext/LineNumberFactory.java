@@ -27,7 +27,7 @@ public class LineNumberFactory implements IntFunction<Node> {
     private static final Font DEFAULT_FONT =
             Font.font("monospace", FontPosture.ITALIC, 13);
     private static final Background DEFAULT_BACKGROUND =
-            new Background(new BackgroundFill(Color.web("#ddd"), null, null));
+            new Background(new BackgroundFill(Color.web("#F2F2F2"), null, null));
 
     public static IntFunction<Node> get(GenericStyledArea<?, ?, ?> area) {
         return get(area, digits -> "%1$" + digits + "s");

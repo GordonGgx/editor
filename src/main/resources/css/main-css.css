@@ -135,3 +135,20 @@
     -fx-border-color: #BDBDBD;
     -fx-border-insets: 0;
 }
+
+/*search*/
+#searchUp:hover{
+    -fx-border-color: #c0c0c0;
+}
+#searchDown:hover{
+    -fx-border-color: #c0c0c0;
+}
+.button{
+    -fx-background-insets: 0;
+    -fx-border-color: #c0c0c0;
+    -fx-border-radius: 2;
+}
+.text-field{
+    -fx-background-insets: 0;
+    -fx-border-color: #BDBDBD;
+}

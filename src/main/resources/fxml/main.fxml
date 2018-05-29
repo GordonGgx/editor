@@ -10,6 +10,8 @@
 <?import com.jfoenix.controls.JFXDialog?>
 <?import com.jfoenix.controls.JFXDialogLayout?>
 <?import com.jfoenix.controls.JFXButton?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Text?>
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
            fx:id="root"
@@ -57,7 +59,7 @@
                 </Menu>
 
                 <Menu text="Edit">
-                    <MenuItem fx:id="findAction" onAction="#findOn" disable="true">
+                    <MenuItem fx:id="findAction" onAction="#openFind" disable="true">
                         <accelerator>
                             <KeyCodeCombination alt="UP" code="F" control="DOWN" meta="UP" shift="UP" shortcut="DOWN"/>
                         </accelerator>
@@ -218,33 +220,94 @@
                     </top>
 
                     <center>
-                        <StackPane fx:id="editorContainer">
-                            <StackPane fx:id="fileContainer" style="-fx-background-color:#B6B6B6;">
-                                <Label fx:id="welcome" text="欢迎" StackPane.alignment="CENTER"/>
-                            </StackPane>
-                            <StackPane
-                                    fx:id="searchContainer"
-                                    maxHeight="50"
-                                    style="-fx-background-color: #F2F2F2"
-                                    StackPane.alignment="TOP_LEFT"
-                                    alignment="CENTER_LEFT" visible="false">
-                                <HBox
-                                    maxWidth="${fileContainer.width}"
-                                    maxHeight="50"
-                                    style="-fx-background-color: #F2F2F2"
-                                    StackPane.alignment="TOP_LEFT"
-                                    alignment="CENTER_LEFT">
-                                    <TextField promptText="search"/>
-
-                                </HBox>
-                                <ImageView StackPane.alignment="TOP_RIGHT" onMouseClicked="#closeFind">
-                                    <StackPane.margin>
-                                        <Insets top="5" right="5"/>
-                                    </StackPane.margin>
-                                    <Image url="@/icons/close_16.png"/>
-                                </ImageView>
-                            </StackPane>
-                        </StackPane>
+                        <BorderPane fx:id="editorContainer">
+                            <top>
+                                <StackPane
+                                        fx:id="searchContainer"
+                                        prefHeight="50"
+                                        style="-fx-background-color: #F2F2F2"
+                                        StackPane.alignment="TOP_LEFT"
+                                        alignment="CENTER_LEFT" visible="false" managed="false">
+                                    <padding>
+                                        <Insets topRightBottomLeft="5"/>
+                                    </padding>
+                                    <GridPane
+                                            maxWidth="${fileContainer.width}"
+                                            maxHeight="50"
+                                            style="-fx-background-color: #F2F2F2"
+                                            StackPane.alignment="TOP_LEFT"
+                                            vgap="5" hgap="10">
+                                        <ImageView>
+                                            <Image url="@/icons/search_16.png"/>
+                                            <GridPane.rowIndex>0</GridPane.rowIndex>
+                                            <GridPane.columnIndex>0</GridPane.columnIndex>
+                                        </ImageView>
+                                        <TextField
+                                                fx:id="tfSearch"
+                                                promptText="search"
+                                                GridPane.rowIndex="0"
+                                                GridPane.columnIndex="1"/>
+                                        <ImageView>
+                                            <Image url="@/icons/replace_16.png"/>
+                                            <GridPane.rowIndex>1</GridPane.rowIndex>
+                                            <GridPane.columnIndex>0</GridPane.columnIndex>
+                                        </ImageView>
+                                        <TextField
+                                                fx:id="tfReplace"
+                                                GridPane.rowIndex="1"
+                                                GridPane.columnIndex="1"
+                                        />
+                                        <StackPane
+                                                id="searchUp"
+                                                GridPane.rowIndex="0"
+                                                GridPane.columnIndex="2"
+                                                onMouseClicked="#searchPreview">
+                                            <Rectangle
+                                                    width="20"
+                                                    height="20"
+                                                    arcHeight="3.5"
+                                                    arcWidth="3.5"
+                                                    fill="#F2F2F2"/>
+                                            <ImageView>
+                                                <Image url="@/icons/up_16.png"/>
+                                            </ImageView>
+                                        </StackPane>
+                                        <StackPane
+                                                id="searchDown"
+                                                GridPane.rowIndex="0"
+                                                GridPane.columnIndex="3"
+                                                onMouseClicked="#searchNext">
+                                            <Rectangle
+                                                    width="20"
+                                                    height="20"
+                                                    arcHeight="3.5"
+                                                    arcWidth="3.5"
+                                                    fill="#F2F2F2"/>
+                                            <ImageView>
+                                                <Image url="@/icons/down_16.png"/>
+                                            </ImageView>
+                                        </StackPane>
+                                        <Button
+                                                GridPane.rowIndex="1"
+                                                GridPane.columnIndex="2"
+                                                GridPane.columnSpan="3"
+                                                text="Replace">
+                                        </Button>
+                                    </GridPane>
+                                    <ImageView StackPane.alignment="TOP_RIGHT" onMouseClicked="#closeFind">
+                                        <StackPane.margin>
+                                            <Insets top="5" right="5"/>
+                                        </StackPane.margin>
+                                        <Image url="@/icons/close_16.png"/>
+                                    </ImageView>
+                                </StackPane>
+                            </top>
+                            <center>
+                                <StackPane fx:id="fileContainer" style="-fx-background-color:#B6B6B6;">
+                                    <Label fx:id="welcome" text="欢迎MarkDown" StackPane.alignment="CENTER"/>
+                                </StackPane>
+                            </center>
+                        </BorderPane>
                     </center>
                     <right>
 
