@@ -1,4 +1,4 @@
-package com.ggx.editor.preview;
+package com.ggx.editor.editor.preview;
 
 import com.ggx.editor.utils.Range;
 import com.vladsch.flexmark.ast.Node;
@@ -9,7 +9,6 @@ import javafx.scene.web.WebView;
 import org.reactfx.EventStreams;
 
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.List;
 
 public class MarkDownPreviewPane {

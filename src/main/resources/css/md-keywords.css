@@ -37,3 +37,7 @@
 .paragraph-box:has-caret {
     -fx-background-color: #f2f9fc;
 }
+
+.selected{
+    -rtfx-background-color: red;
+}

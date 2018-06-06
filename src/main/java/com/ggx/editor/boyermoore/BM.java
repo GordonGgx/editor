@@ -1,5 +1,13 @@
 package com.ggx.editor.boyermoore;
 
+import com.ggx.editor.utils.Range;
+import org.fxmisc.richtext.CodeArea;
+import org.fxmisc.richtext.model.StyleSpansBuilder;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 public class BM {
 
     /**
@@ -20,18 +28,17 @@ public class BM {
     }
 
     /**
-     * @param p_s
-     * @param p_t
+     * @param str
+     * @param key
      * @return -2错误，-1匹配不到，[0,p_s.length-p_t.length]表示t在s中位置,下标从0开始
      */
-    public static int index(final String p_s, final String p_t) {
-        if (p_s == null || p_t == null) {
+    public static int index(List<Range> ranges,final String key, final String str) {
+        if (str == null || key == null) {
             return -2;
         }
-        char[] s = p_s.toCharArray();
-        char[] t = p_t.toCharArray();
+        char[] s = str.toCharArray();
+        char[] t = key.toCharArray();
         int slen = s.length, tlen = t.length;
-
         if (slen < tlen) {
             return -1;
         }
@@ -45,7 +52,7 @@ public class BM {
             }
             if (0 == j) {// j=0时，表示完美匹配，返回其开始匹配的位置
                 int pos=i;
-                System.out.println("匹配成功：位置="+pos);
+                ranges.add(new Range(pos,pos+tlen));
                 i = i+tlen+1;
                 //return i;//如果要匹配多个，这里改为：int pos=i;i = i+tlen+1; --其中每次这个pos就是位置
             } else {
@@ -53,7 +60,6 @@ public class BM {
                 i = i + dist(s[i - 1], t);// 把主串和模式串均向右滑动一段距离dist(s[i-1]).即跳过dist(s[i-1])个字符无需比较
             }
         }
-
         return -1;// 模式串与主串无法匹配
 
     }
