@@ -1,30 +1,3 @@
-/*
- * Copyright (c) 2015 Karl Tauber <karl at jformdesigner dot com>
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *  o Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *
- *  o Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 package com.ggx.editor.markdown;
 
 import com.ggx.editor.utils.Range;
@@ -48,11 +21,10 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 /**
- * Markdown syntax highlighter.
+ * Markdown 语法高亮.
  *
- * Uses flexmark-java AST.
+ * 使用 flexmark-java AST.
  *
- * @author Karl Tauber
  */
 public class MarkdownSyntaxHighlighter
 {
@@ -290,13 +262,10 @@ public class MarkdownSyntaxHighlighter
 
 	private void setParagraphStyle(Paragraph<?,?,?> paragraph, int paragraphIndex, Collection<String> paragraphStyle) {
 		if (paragraphStyleField != null) {
-			// because StyledTextArea.setParagraphStyle() is very very slow,
-			// especially if invoked many times, we (try to) go the "short way"
 			try {
 				paragraphStyleField.set(paragraph, paragraphStyle);
 				return;
 			} catch (Exception ex) {
-				// ignore
 			}
 		}
 
@@ -309,7 +278,6 @@ public class MarkdownSyntaxHighlighter
 			paragraphStyleField = Paragraph.class.getDeclaredField("paragraphStyle");
 			paragraphStyleField.setAccessible(true);
 		} catch (Exception e) {
-			// ignore
 		}
 	}
 
@@ -427,17 +395,7 @@ public class MarkdownSyntaxHighlighter
 		addStyledRange(lineStyleRanges, start, end, styleClass);
 	}
 
-	/**
-	 * Adds a style range to styleRanges.
-	 *
-	 * Makes sure that the ranges are sorted by begin index
-	 * and that there are no overlapping ranges.
-	 * In case the added range overlaps, existing ranges are split.
-	 *
-	 * @param begin the beginning index, inclusive
-	 * @param end   the ending index, exclusive
-	 */
-	/*private*/ static void addStyledRange(ArrayList<StyleRange> styleRanges, int begin, int end, StyleClass styleClass) {
+	static void addStyledRange(ArrayList<StyleRange> styleRanges, int begin, int end, StyleClass styleClass) {
 		long styleBits = 1L << styleClass.ordinal();
 		addStyledRange(styleRanges, begin, end, styleBits);
 	}
@@ -445,41 +403,40 @@ public class MarkdownSyntaxHighlighter
 	private static void addStyledRange(ArrayList<StyleRange> styleRanges, int begin, int end, long styleBits) {
 		final int lastIndex = styleRanges.size() - 1;
 
-		// check whether list is empty
+		// 检查列表是否为空
 		if (styleRanges.isEmpty()) {
 			styleRanges.add(new StyleRange(begin, end, styleBits));
 			return;
 		}
 
-		// check whether new range is after last range
+		// 检查新范围是否在最后一个范围之后
 		final StyleRange lastRange = styleRanges.get(lastIndex);
 		if (begin >= lastRange.end) {
 			styleRanges.add(new StyleRange(begin, end, styleBits));
 			return;
 		}
 
-		// walk existing ranges from last to first
+		// 从上到下遍历现有的范围
 		for (int i = lastIndex; i >= 0; i--) {
 			StyleRange range = styleRanges.get(i);
 			if (end <= range.begin) {
-				// new range is before existing range (no overlapping) --> nothing yet to do
+				//新的范围在现有的范围之前（没有重叠）就什么也不做
 				continue;
 			}
 
 			if (begin >= range.end) {
-				// existing range is before new range (no overlapping)
-
+				// 现有范围在新范围之前（无重叠）
 				if (begin < styleRanges.get(i+1).begin) {
-					// new range starts after this range (may overlap next range) --> add
+					//新范围在这个范围之后开始（可能与下一个范围重叠）作添加
 					int end2 = Math.min(end, styleRanges.get(i+1).begin);
 					styleRanges.add(i + 1, new StyleRange(begin, end2, styleBits));
 				}
 
-				break; // done
+				break;
 			}
 
 			if (end > range.end) {
-				// new range ends after this range (may overlap next range) --> add
+				//新范围在这个范围之后结束（可能与下一个范围重叠）-> 添加
 				int end2 = (i == lastIndex) ? end : Math.min(end, styleRanges.get(i+1).begin);
 				if (end2 > range.end)
 					styleRanges.add(i + 1, new StyleRange(range.end, end2, styleBits));
@@ -516,12 +473,12 @@ public class MarkdownSyntaxHighlighter
 		}
 	}
 
-	//---- class StyleRange ---------------------------------------------------
+
 
 	public static class StyleRange
 	{
-		final int begin;		// inclusive
-		final int end;			// exclusive
+		final int begin;		// 包含
+		final int end;			// 不包含
 		final long styleBits;	// 1 << StyleClass.ordinal()
 
 		StyleRange(int begin, int end, long styleBits) {
@@ -531,7 +488,7 @@ public class MarkdownSyntaxHighlighter
 		}
 	}
 
-	//---- class ExtraStyledRanges --------------------------------------------
+
 
 	public static class ExtraStyledRanges {
 		final String styleClass;

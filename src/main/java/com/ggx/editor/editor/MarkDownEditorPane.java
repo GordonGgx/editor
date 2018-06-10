@@ -1,7 +1,5 @@
 package com.ggx.editor.editor;
 
-import com.ggx.editor.Main;
-import com.ggx.editor.markdown.MarkDownKeyWord;
 import com.ggx.editor.markdown.MarkdownSyntaxHighlighter;
 import com.ggx.editor.options.Options;
 import com.vladsch.flexmark.Extension;
@@ -20,7 +18,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.IndexRange;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
@@ -34,8 +31,10 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class MarkDownEditorPane {
 
