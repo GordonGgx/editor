@@ -225,7 +225,7 @@
                             </top>
                             <center>
                                 <StackPane fx:id="fileContainer" style="-fx-background-color:#B6B6B6;">
-                                    <Label fx:id="welcome" text="欢迎MarkDown" StackPane.alignment="CENTER"/>
+                                    <Label id="welcome" text="欢迎MarkDown" StackPane.alignment="CENTER"/>
                                 </StackPane>
                             </center>
                         </BorderPane>
@@ -237,12 +237,6 @@
             </SplitPane>
         </center>
         <bottom>
-            <StackPane style="-fx-background-color:#F2F2F2" prefHeight="20">
-                <ImageView StackPane.alignment="CENTER_LEFT">
-                    <Image url="@/icons/information_16.png"/>
-                </ImageView>
-
-            </StackPane>
         </bottom>
     </BorderPane>
     <JFXDialog fx:id="dialog">
@@ -251,8 +245,14 @@
                 <Label>About Editor</Label>
             </heading>
             <body>
-                <Label>完全开源的MarkDown编辑器，仅供学习使用。
+                <VBox>
+                <Label>
+                    完全开源的MarkDown编辑器，仅供学习使用。
                 </Label>
+                    <Label alignment="CENTER">
+                        copyright © 2018-2020 Ggx
+                    </Label>
+                </VBox>
             </body>
             <actions>
                 <JFXButton fx:id="acceptButton" styleClass="dialog-accept">ACCEPT

@@ -72,6 +72,7 @@
             </ImageView>
         </StackPane>
         <Button
+                fx:id="replaceBtn"
                 GridPane.rowIndex="1"
                 GridPane.columnIndex="2"
                 GridPane.columnSpan="3"

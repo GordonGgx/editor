@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.text.Text?>
+
+<?import javafx.geometry.Insets?>
+<StackPane
+        xmlns="http://javafx.com/javafx"
+        xmlns:fx="http://javafx.com/fxml"
+        style="-fx-background-color:#F2F2F2"
+        prefHeight="25">
+    <padding>
+        <Insets left="6" right="20"/>
+    </padding>
+    <ImageView StackPane.alignment="CENTER_LEFT">
+        <Image url="@/icons/information_16.png"/>
+
+    </ImageView>
+
+
+    <HBox
+            spacing="10"
+            alignment="CENTER_RIGHT"
+            StackPane.alignment="CENTER_RIGHT">
+
+
+        <Label fx:id="coordinate"  wrapText="true"/>
+        <Label fx:id="textType"  wrapText="true" text="markdown"/>
+    </HBox>
+
+</StackPane>
+

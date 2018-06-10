@@ -2,19 +2,23 @@ package com.ggx.editor.editor;
 
 import com.ggx.editor.boyermoore.BM;
 import com.ggx.editor.utils.Range;
-import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import org.fxmisc.richtext.CodeArea;
+import org.fxmisc.richtext.MultiChangeBuilder;
+import org.fxmisc.richtext.model.TwoDimensional;
 import org.reactfx.Change;
 import org.reactfx.EventStreams;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -48,6 +52,7 @@ public class FindReplacePane {
     private List<Range> hits=new ArrayList<>();
     private int activeHitIndex=-1;
 
+
     public boolean isVisible(){return visible.get();}
 
     public FindReplacePane(BorderPane container,CodeArea area){
@@ -69,6 +74,9 @@ public class FindReplacePane {
             findRoot.lookup("#searchUp").setOnMouseClicked(event -> findPrevious());
             EventStreams.changesOf(findField.textProperty()).map(Change::getNewValue)
                     .subscribe(s -> textChanged());
+            Button replace= (Button) findRoot.lookup("#replaceBtn");
+            EventStreams.eventsOf(replace,MouseEvent.MOUSE_CLICKED)
+                    .subscribe(mouseEvent -> replaceAll(replaceField.getText()));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -88,12 +96,12 @@ public class FindReplacePane {
 
     public List<Range> getHits(){return hits;}
     public Range getActiveHit(){
-        if(activeHitIndex>0&&activeHitIndex<hits.size()){
+        if(activeHitIndex>=0&&activeHitIndex<hits.size()){
             return hits.get(activeHitIndex);
         }
         return null;
     }
-    public boolean hasHits(){return activeHitIndex>0;}
+    public boolean hasHits(){return activeHitIndex>=0;}
 
     public void textChanged(){
         findAll(false);
@@ -109,9 +117,9 @@ public class FindReplacePane {
         hits.clear();
         //使用BM算法获取
         BM.index(hits,find,text);
-//        System.out.println(hits);
         if(hits.isEmpty()){
             setActiveHitIndex(-1,selectActivity);
+            updateOverviewRuler();
             return;
         }
         int anchor=codeArea.getAnchor();
@@ -121,6 +129,7 @@ public class FindReplacePane {
             if (index >= hits.size()) index = 0; // wrap
         }
         setActiveHitIndex(index,selectActivity);
+        updateOverviewRuler();
     }
 
     private void findPrevious(){
@@ -130,8 +139,8 @@ public class FindReplacePane {
         int previous = activeHitIndex - 1;
         if (previous < 0)
             previous = hits.size() - 1;
-
         setActiveHitIndex(previous, true);
+        updateOverviewRuler();
     }
 
     private void findNext(){
@@ -143,23 +152,24 @@ public class FindReplacePane {
             next = 0;
 
         setActiveHitIndex(next, true);
+        updateOverviewRuler();
     }
 
     private void clearHits() {
         hits.clear();
         setActiveHitIndex(-1, false);
+        updateOverviewRuler();
     }
 
     private void setActiveHitIndex(int index, boolean selectActiveHit) {
-        int oldActiveHitIndex = activeHitIndex;
+        int oldActiveHitIndex=activeHitIndex;
         activeHitIndex = index;
 
         if (selectActiveHit)
             selectActiveHit();
 
-        if (oldActiveHitIndex < 0 && activeHitIndex < 0)
-            return; // not necessary to fire event
-
+        if (oldActiveHitIndex<0&&activeHitIndex < 0)
+            return; // 不需要激活
         activeHitsChanged();
     }
 
@@ -171,5 +181,31 @@ public class FindReplacePane {
         if(activeHit!=null){
             codeArea.selectRange(activeHit.start, activeHit.end);
         }
+    }
+
+    private void updateOverviewRuler() {
+        if (hits.isEmpty())
+            return;
+        Range hit=getActiveHit();
+        if(hit!=null){
+            int line = codeArea.offsetToPosition(hit.start, TwoDimensional.Bias.Backward).getMajor();
+            codeArea.showParagraphInViewport(line);
+        }
+    }
+
+    private void replaceAll(String replace){
+        if(hits.isEmpty())return;
+
+        MultiChangeBuilder<Collection<String>, String, Collection<String>> multiChange =
+                codeArea.createMultiChange(hits.size());
+        for (Range hit : hits) {
+            multiChange.replaceText(hit.start, hit.end, replace);
+        }
+        hits.clear();
+        //撤销保存
+        codeArea.getUndoManager().preventMerge();
+        multiChange.commit();
+        codeArea.getUndoManager().preventMerge();
+        codeArea.requestFocus();
     }
 }

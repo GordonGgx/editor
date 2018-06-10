@@ -228,3 +228,6 @@
 .markdown-editor .hit-active {
 	-rtfx-background-color: #F9A825 !important;
 }
+.scroll-bar > .track {
+	-mwfx-hit: #FBC02D;
+}

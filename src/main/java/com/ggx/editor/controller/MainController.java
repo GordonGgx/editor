@@ -1,12 +1,11 @@
 package com.ggx.editor.controller;
 
 import com.ggx.editor.Main;
-import com.ggx.editor.boyermoore.BM;
-import com.ggx.editor.editor.FindReplacePane;
+import com.ggx.editor.editor.FooterPane;
 import com.ggx.editor.editor.MarkDownEditorPane;
+import com.ggx.editor.editor.preview.MarkDownPreviewPane;
 import com.ggx.editor.fileos.FileMonitor;
 import com.ggx.editor.interfaces.TreeListAction;
-import com.ggx.editor.editor.preview.MarkDownPreviewPane;
 import com.ggx.editor.utils.FileUtil;
 import com.ggx.editor.widget.TextFieldTreeCellImpl;
 import com.jfoenix.controls.JFXButton;
@@ -20,7 +19,6 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -32,7 +30,9 @@ import org.reactfx.EventStreams;
 import java.io.*;
 import java.net.URL;
 import java.text.DateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.function.Consumer;
 
 public class MainController  implements Initializable, TreeListAction,Runnable {
@@ -72,14 +72,16 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
 
     private MarkDownPreviewPane markDownPreview;
     private MarkDownEditorPane markDownEditorPane;
-//    private FindReplacePane findReplacePane;
+    private FooterPane footerPane;
 
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         markDownPreview=new MarkDownPreviewPane();
         markDownEditorPane=new MarkDownEditorPane(editorContainer);
-//        findReplacePane=new FindReplacePane(editorContainer,markDownEditorPane.getTextArea());
+        footerPane=new FooterPane(markDownEditorPane.getTextArea());
+        rootPane.setBottom(footerPane.getNode());
+
 
         treeView.setShowRoot(true);
         treeView.setEditable(true);
@@ -173,12 +175,7 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
         }
         currentFile = file;
         initOpenFile();
-        title.setText(FileUtil.prefixName(file) + " " + DateFormat.getDateInstance(DateFormat.DEFAULT, Locale.CHINESE).format(file.lastModified()));
-        if (file.getName().endsWith(".md")) {
-            title.setGraphic(new ImageView(new Image(ClassLoader.getSystemResourceAsStream("icons/md_24.png"))));
-        } else {
-            title.setGraphic(new ImageView(new Image(ClassLoader.getSystemResourceAsStream("icons/txt_24.png"))));
-        }
+        changeTextType(file);
         BufferedReader br = null;
         try {
             StringBuilder sb = new StringBuilder();
@@ -241,12 +238,7 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
     @Override
     public void modifyFile(File file) {
         currentFile = file;
-        title.setText(FileUtil.prefixName(file) + " " + DateFormat.getDateInstance(DateFormat.DEFAULT, Locale.CHINESE).format(file.lastModified()));
-        if (file.getName().endsWith(".md")) {
-            title.setGraphic(new ImageView(new Image(ClassLoader.getSystemResourceAsStream("icons/md_24.png"))));
-        } else {
-            title.setGraphic(new ImageView(new Image(ClassLoader.getSystemResourceAsStream("icons/txt_24.png"))));
-        }
+        changeTextType(file);
     }
 
     @FXML
@@ -329,6 +321,8 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
         titleBar.setVisible(true);
         titleBar.setManaged(true);
         toggleContainer.setVisible(true);
+        footerPane.showCoordinate(true);
+        footerPane.showTextType(true);
     }
 
     private void deleteFileAction(){
@@ -343,6 +337,8 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
         titleBar.setVisible(false);
         titleBar.setManaged(false);
         toggleContainer.setVisible(false);
+        footerPane.showCoordinate(false);
+        footerPane.showTextType(false);
     }
 
     //关闭面板并清理一些东西
@@ -354,6 +350,18 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
         deleteFileAction();
         title.setText(null);
         title.setGraphic(null);
+    }
+
+    private void changeTextType(File file){
+        footerPane.setTextType(FooterPane.TextType.None);
+        title.setText(FileUtil.prefixName(file) + " " + DateFormat.getDateInstance(DateFormat.DEFAULT, Locale.CHINESE).format(file.lastModified()));
+        if (file.getName().endsWith(".md")) {
+            title.setGraphic(new ImageView(new Image(ClassLoader.getSystemResourceAsStream("icons/md_24.png"))));
+            footerPane.setTextType(FooterPane.TextType.MarkDown);
+        } else {
+            title.setGraphic(new ImageView(new Image(ClassLoader.getSystemResourceAsStream("icons/txt_24.png"))));
+            footerPane.setTextType(FooterPane.TextType.Text);
+        }
     }
 
     @FXML

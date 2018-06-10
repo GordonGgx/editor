@@ -152,3 +152,7 @@
     -fx-background-insets: 0;
     -fx-border-color: #BDBDBD;
 }
+
+.label{
+    -fx-font-family: Arab;
+}

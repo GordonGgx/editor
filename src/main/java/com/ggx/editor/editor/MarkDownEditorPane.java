@@ -19,10 +19,15 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.IndexRange;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
+import org.fxmisc.wellbehaved.event.EventPattern;
+import org.fxmisc.wellbehaved.event.InputMap;
+import org.fxmisc.wellbehaved.event.Nodes;
 import org.reactfx.EventStreams;
 
 import java.io.BufferedWriter;
@@ -76,6 +81,13 @@ public class MarkDownEditorPane {
                 } );
         //listener textArea scroll
         textArea.estimatedScrollYProperty().addListener(scrollYListener);
+        Nodes.addInputMap(textArea,InputMap.sequence(
+                InputMap.consume(EventPattern.keyPressed(KeyCode.TAB),keyEvent -> {
+                    textArea.replaceSelection("    ");
+                    textArea.requestFollowCaret();
+                })
+        ) );
+
         //findReplace
         findReplacePane=new FindReplacePane(container,textArea);
         hitsChangeListener=this::findHitsChanged;
@@ -93,11 +105,6 @@ public class MarkDownEditorPane {
     }
 
     private void findHitsChanged() {
-        if (findReplacePane.isVisible()) {
-            findReplacePane.removeListener(hitsChangeListener);
-            findReplacePane.textChanged();
-            findReplacePane.addListener(hitsChangeListener);
-        }
         applyHighlighting(markDownAST.get());
     }
 
