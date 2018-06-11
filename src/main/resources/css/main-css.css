@@ -154,5 +154,10 @@
 }
 
 .label{
-    -fx-font-family: Arab;
+    -fx-font-family: "Ubuntu Mono";
+    -fx-font-size: 16px;
+}
+.tab-pane{
+    -fx-font-family: "Ubuntu Mono";
+    -fx-font-size: 16px;
 }

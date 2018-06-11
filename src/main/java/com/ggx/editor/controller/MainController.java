@@ -3,6 +3,7 @@ package com.ggx.editor.controller;
 import com.ggx.editor.Main;
 import com.ggx.editor.editor.FooterPane;
 import com.ggx.editor.editor.MarkDownEditorPane;
+import com.ggx.editor.editor.SettingsPane;
 import com.ggx.editor.editor.preview.MarkDownPreviewPane;
 import com.ggx.editor.fileos.FileMonitor;
 import com.ggx.editor.interfaces.TreeListAction;
@@ -24,6 +25,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import org.reactfx.Change;
 import org.reactfx.EventStreams;
 
@@ -73,10 +75,12 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
     private MarkDownPreviewPane markDownPreview;
     private MarkDownEditorPane markDownEditorPane;
     private FooterPane footerPane;
+    private SettingsPane settingsPane;
 
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        settingsPane=new SettingsPane();
         markDownPreview=new MarkDownPreviewPane();
         markDownEditorPane=new MarkDownEditorPane(editorContainer);
         footerPane=new FooterPane(markDownEditorPane.getTextArea());
@@ -398,6 +402,7 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
 
     @FXML
     public void openSettings() {
+        settingsPane.showSettings();
 
     }
 

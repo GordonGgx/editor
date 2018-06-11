@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+
+<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.Pos?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.geometry.Insets?>
+<?import com.jfoenix.controls.JFXButton?>
+<GridPane prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.121"
+          xmlns:fx="http://javafx.com/fxml/1">
+    <vgap>5</vgap>
+    <hgap>5</hgap>
+    <padding>
+        <Insets topRightBottomLeft="10"/>
+    </padding>
+    <Label text="Editor">
+        <GridPane.rowIndex>0</GridPane.rowIndex>
+        <GridPane.columnIndex>0</GridPane.columnIndex>
+        <GridPane.columnSpan>2</GridPane.columnSpan>
+    </Label>
+    <Label alignment="CENTER" text="字体">
+        <GridPane.rowIndex>1</GridPane.rowIndex>
+        <GridPane.columnIndex>0</GridPane.columnIndex>
+    </Label>
+    <JFXComboBox fx:id="fonts">
+        <GridPane.rowIndex>1</GridPane.rowIndex>
+        <GridPane.columnIndex>1</GridPane.columnIndex>
+        <GridPane.columnSpan>5</GridPane.columnSpan>
+    </JFXComboBox>
+    <Label text="大小">
+        <GridPane.rowIndex>2</GridPane.rowIndex>
+        <GridPane.columnIndex>0</GridPane.columnIndex>
+    </Label>
+    <JFXComboBox fx:id="fontSize">
+        <GridPane.rowIndex>2</GridPane.rowIndex>
+        <GridPane.columnIndex>1</GridPane.columnIndex>
+    </JFXComboBox>
+    <JFXButton fx:id="save">
+        <text>保存</text>
+    </JFXButton>
+</GridPane>

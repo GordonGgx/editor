@@ -16,7 +16,9 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.geometry.Point2D;
 import javafx.scene.control.IndexRange;
+import javafx.scene.input.InputMethodRequests;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import org.fxmisc.flowless.VirtualizedScrollPane;
@@ -86,6 +88,12 @@ public class MarkDownEditorPane {
                     textArea.requestFollowCaret();
                 })
         ) );
+        textArea.setInputMethodRequests(new InputMethodRequestsObject());
+        textArea.setOnInputMethodTextChanged(event -> {
+            if(!event.getCommitted().equals("")){
+                textArea.insertText(textArea.getCaretPosition(), event.getCommitted());
+            }
+        });
 
         //findReplace
         findReplacePane=new FindReplacePane(container,textArea);
@@ -199,5 +207,28 @@ public class MarkDownEditorPane {
 
     public void showFindPane(){
         findReplacePane.showFindPane();
+    }
+
+    class InputMethodRequestsObject implements InputMethodRequests {
+
+        @Override
+        public Point2D getTextLocation(int offset) {
+            return new Point2D(0,0);
+        }
+
+        @Override
+        public int getLocationOffset(int x, int y) {
+            return 0;
+        }
+
+        @Override
+        public void cancelLatestCommittedText() {
+
+        }
+
+        @Override
+        public String getSelectedText() {
+            return "";
+        }
     }
 }
