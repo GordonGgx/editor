@@ -7,13 +7,9 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Pos;
-import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 
 import java.awt.*;
 import java.io.IOException;
@@ -37,16 +33,17 @@ public class AppearancePane {
             CompletableFuture.supplyAsync(()-> GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames())
                     .thenAccept(strings -> Platform.runLater(()-> {
                         fontFamilyBox.setItems(FXCollections.observableArrayList(strings));
-                        fontFamilyBox.setValue("Ubuntu Mono");
+                        fontFamilyBox.setValue(Options.getFontFamily());
                     }));
             JFXComboBox<Integer> fontSizeBox= (JFXComboBox<Integer>) gridPane.lookup("#fontSize");
             fontSizeBox.setItems(fontSize);
-            fontSizeBox.setValue(14);
+            fontSizeBox.setValue(Options.getFontSize());
             JFXButton save= (JFXButton) gridPane.lookup("#save");
             save.setOnMouseClicked(event -> {
                 Options.setFontSize(fontSizeBox.getSelectionModel().getSelectedItem());
                 Options.setFontFamily(fontFamilyBox.getSelectionModel().getSelectedItem());
             });
+
             scrollPane.setContent(gridPane);
         } catch (IOException e) {
             e.printStackTrace();

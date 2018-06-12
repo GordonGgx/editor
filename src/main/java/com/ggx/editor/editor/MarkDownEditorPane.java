@@ -1,7 +1,6 @@
 package com.ggx.editor.editor;
 
 import com.ggx.editor.markdown.MarkdownSyntaxHighlighter;
-import com.ggx.editor.options.Options;
 import com.vladsch.flexmark.Extension;
 import com.vladsch.flexmark.ast.Node;
 import com.vladsch.flexmark.ext.anchorlink.AnchorLinkExtension;
@@ -45,7 +44,6 @@ public class MarkDownEditorPane {
     private VirtualizedScrollPane<CodeArea> scrollPane;
     private final FindReplacePane.HitsChangeListener hitsChangeListener;
     private Parser parser;
-    private String lineSeparator = getLineSeparatorOrDefault();
     private SimpleIntegerProperty textSize=new SimpleIntegerProperty();
     private ReadOnlyDoubleWrapper scrollY=new ReadOnlyDoubleWrapper();
     private ReadOnlyObjectWrapper<Node> markDownAST=new ReadOnlyObjectWrapper<>();
@@ -106,10 +104,6 @@ public class MarkDownEditorPane {
         markDownAST.set(parseMarkDown(""));
     }
 
-    private String getLineSeparatorOrDefault() {
-        String lineSeparator = Options.getLineSeparator();
-        return (lineSeparator != null) ? lineSeparator : System.getProperty( "line.separator", "\n" );
-    }
 
     private void findHitsChanged() {
         applyHighlighting(markDownAST.get());

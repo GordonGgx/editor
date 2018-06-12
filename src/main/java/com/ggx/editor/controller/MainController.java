@@ -3,10 +3,11 @@ package com.ggx.editor.controller;
 import com.ggx.editor.Main;
 import com.ggx.editor.editor.FooterPane;
 import com.ggx.editor.editor.MarkDownEditorPane;
-import com.ggx.editor.editor.SettingsPane;
+import com.ggx.editor.editor.setting.SettingsPane;
 import com.ggx.editor.editor.preview.MarkDownPreviewPane;
 import com.ggx.editor.fileos.FileMonitor;
 import com.ggx.editor.interfaces.TreeListAction;
+import com.ggx.editor.options.Options;
 import com.ggx.editor.utils.FileUtil;
 import com.ggx.editor.widget.TextFieldTreeCellImpl;
 import com.jfoenix.controls.JFXButton;
@@ -25,7 +26,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import org.reactfx.Change;
 import org.reactfx.EventStreams;
 
@@ -90,7 +90,23 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
         treeView.setShowRoot(true);
         treeView.setEditable(true);
         treeView.setCellFactory(param -> new TextFieldTreeCellImpl(this));
+        String oldFilePath=Options.getLastFilePath();
+        if(oldFilePath!=null){
+            File dir=new File(oldFilePath);
+            if(dir.exists()&&dir.isDirectory()){
+                ImageView iv = new ImageView(folderIcon);
+                iv.setSmooth(true);
+                iv.setViewport(new Rectangle2D(0, 0, 16, 16));
+                TreeItem<File> rootTree = new TreeItem<>(dir, iv);
+                searchFile(dir, rootTree);
+                treeView.setRoot(rootTree);
+                rootTree.setExpanded(true);
+                FileMonitor.get().addWatchFile(dir);
+                FileMonitor.get().setListener(this);
+                FileMonitor.get().watch();
+            }
 
+        }
 
         jfxHamburger.setMaxSize(20, 10);
         burgerTask3 = new HamburgerBackArrowBasicTransition(jfxHamburger);
@@ -250,6 +266,7 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
         DirectoryChooser chooser=new DirectoryChooser();
         File dir=chooser.showDialog(Main.get());
         if(dir!=null&&dir.exists()){
+            Options.setLastFilePath(dir.getAbsolutePath());
             clear();
             ImageView iv = new ImageView(folderIcon);
             iv.setSmooth(true);
@@ -274,6 +291,7 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
         if(!dir.exists()){
             if(dir.mkdir()){
                 System.out.println("创建成功");
+                Options.setLastFilePath(dir.getAbsolutePath());
                 FileMonitor.get().addWatchFile(dir);
                 clear();
                 ImageView iv = new ImageView(folderIcon);

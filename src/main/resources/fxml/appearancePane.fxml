@@ -42,6 +42,8 @@
         <GridPane.columnIndex>1</GridPane.columnIndex>
     </JFXComboBox>
     <JFXButton fx:id="save">
-        <text>保存</text>
+        <text>Apply</text>
+        <GridPane.rowIndex>6</GridPane.rowIndex>
+        <GridPane.columnIndex>4</GridPane.columnIndex>
     </JFXButton>
 </GridPane>
