@@ -1,29 +1,29 @@
-# README #
+# FxMarkdownEditor #
 
-This README would normally document whatever steps are necessary to get your application up and running.
+使用JavaFx编写的开源Markdown编辑器，代码用于学习和分享使用。
 
-### What is this repository for? ###
+![image](image.png)
+### Feature ###
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+* 编辑器语法高亮
+* 查找和替换
+* HTML时事预览
+* 文件树结构目录层次
+* 编辑，预览，编辑/预览切换
+* 支持Windows,Linux
 
-### How do I get set up? ###
+### Thanks very much ###
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+* [RichTextFX](https://github.com/FXMisc/RichTextFX)
+* [ReactFX](https://github.com/TomasMikula/ReactFX)
+* [flexmark-java](https://github.com/vsch/flexmark-java)
+* [JFoenix](https://github.com/jfoenixadmin/JFoenix)
+* [Markdown Writer FX](https://github.com/JFormDesigner/markdown-writer-fx)
 
-### Contribution guidelines ###
+#### 特别感谢 ####
+十分感谢[Markdown Writer FX](https://github.com/JFormDesigner/markdown-writer-fx)项目，给了我不少参考和建议。
+尤其是对于我这种JavaFx刚接触的门外汉来说。
 
-* Writing tests
-* Code review
-* Other guidelines
+### Contact ###
 
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
+我的QQ群：392154157
