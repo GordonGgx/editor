@@ -34,7 +34,7 @@ public class WebViewPreview implements MarkDownPreviewPane.Preview{
     private void createNodes(){
         webView=new WebView();
         webView.setFocusTraversable(false);
-        // disable WebView default drag and drop handler to allow dropping markdown files
+        // 禁用webView默认拖拽事件
         webView.setOnDragEntered(null);
         webView.setOnDragExited(null);
         webView.setOnDragOver(null);
