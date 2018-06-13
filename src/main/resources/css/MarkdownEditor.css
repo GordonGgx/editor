@@ -222,3 +222,12 @@
 .markdown-editor .abbr {
 	-fx-fill: #004D40;
 }
+.markdown-editor .hit {
+	-rtfx-background-color: #FFF59D !important;
+}
+.markdown-editor .hit-active {
+	-rtfx-background-color: #F9A825 !important;
+}
+.scroll-bar > .track {
+	-mwfx-hit: #FBC02D;
+}

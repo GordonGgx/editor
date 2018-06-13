@@ -1,8 +1,6 @@
 package com.ggx.editor.editor;
 
-import com.ggx.editor.Main;
-import com.ggx.editor.markdown.MarkDownKeyWord;
-import com.ggx.editor.options.Options;
+import com.ggx.editor.markdown.MarkdownSyntaxHighlighter;
 import com.vladsch.flexmark.Extension;
 import com.vladsch.flexmark.ast.Node;
 import com.vladsch.flexmark.ext.anchorlink.AnchorLinkExtension;
@@ -17,47 +15,54 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.geometry.Point2D;
 import javafx.scene.control.IndexRange;
+import javafx.scene.input.InputMethodRequests;
+import javafx.scene.input.KeyCode;
+import javafx.scene.layout.BorderPane;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
+import org.fxmisc.wellbehaved.event.EventPattern;
+import org.fxmisc.wellbehaved.event.InputMap;
+import org.fxmisc.wellbehaved.event.Nodes;
 import org.reactfx.EventStreams;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 public class MarkDownEditorPane {
 
     private CodeArea textArea;
+    private FindReplacePane findReplacePane;
     private VirtualizedScrollPane<CodeArea> scrollPane;
+    private final FindReplacePane.HitsChangeListener hitsChangeListener;
     private Parser parser;
-    private String lineSeparator = getLineSeparatorOrDefault();
     private SimpleIntegerProperty textSize=new SimpleIntegerProperty();
     private ReadOnlyDoubleWrapper scrollY=new ReadOnlyDoubleWrapper();
     private ReadOnlyObjectWrapper<Node> markDownAST=new ReadOnlyObjectWrapper<>();
     private ReadOnlyStringWrapper markDownText=new ReadOnlyStringWrapper();
 
-    public MarkDownEditorPane() {
+    public MarkDownEditorPane(BorderPane container) {
         textArea=new CodeArea();
         textArea.setWrapText(true);
         textArea.setUseInitialStyleForInsertion(true);
-//        textArea.getStyleClass().add("markdown-editor");
-//        textArea.getStylesheets().add("css/MarkdownEditor.css");
+        textArea.getStyleClass().add("markdown-editor");
+        textArea.getStylesheets().add("css/MarkdownEditor.css");
         textArea.getStylesheets().add("css/prism.css");
-        textArea.getStylesheets().add("css/md-keywords.css");
         textArea.setParagraphGraphicFactory(LineNumberFactory.get(textArea));
 
         textSize.addListener((observable, oldValue, newValue) -> textArea.setStyle("-fx-font-size:"+newValue));
         textSize.setValue(16);
         EventStreams.changesOf(textArea.textProperty())
-                .reduceSuccessions((stringChange, stringChange2) -> stringChange2,
-                        Duration.ofMillis(500))
+                /*.reduceSuccessions((stringChange, stringChange2) -> stringChange2,
+                        Duration.ofMillis(500))*/
                 .subscribe(stringChange -> textChanged(stringChange.getNewValue()));
         ChangeListener<Double> scrollYListener=(observable, oldValue, newValue) -> {
             double value=textArea.estimatedScrollYProperty().getValue();
@@ -75,24 +80,23 @@ public class MarkDownEditorPane {
                 } );
         //listener textArea scroll
         textArea.estimatedScrollYProperty().addListener(scrollYListener);
-        //keyworlds lighheith
-        textArea.richChanges()
-                .filter(ch -> !ch.getInserted().equals(ch.getRemoved()))
-                .successionEnds(Duration.ofMillis(500))
-                .supplyTask(()-> MarkDownKeyWord.computeHighlightingAsync(Main.getExecutor(),textArea))
-                .awaitLatest(textArea.richChanges())
-                .filterMap(t -> {
-                    if(t.isSuccess()) {
-                        return Optional.of(t.get());
-                    } else {
-                        t.getFailure().printStackTrace();
-                        return Optional.empty();
-                    }
+        Nodes.addInputMap(textArea,InputMap.sequence(
+                InputMap.consume(EventPattern.keyPressed(KeyCode.TAB),keyEvent -> {
+                    textArea.replaceSelection("    ");
+                    textArea.requestFollowCaret();
                 })
-                .subscribe(styleSpans -> {
-                    //应用高亮样式
-                    textArea.setStyleSpans(0, styleSpans);
-                });
+        ) );
+        textArea.setInputMethodRequests(new InputMethodRequestsObject());
+        textArea.setOnInputMethodTextChanged(event -> {
+            if(!event.getCommitted().equals("")){
+                textArea.insertText(textArea.getCaretPosition(), event.getCommitted());
+            }
+        });
+
+        //findReplace
+        findReplacePane=new FindReplacePane(container,textArea);
+        hitsChangeListener=this::findHitsChanged;
+        findReplacePane.addListener(hitsChangeListener);
 
         //添加VirtualScrollPane
         scrollPane=new VirtualizedScrollPane<>(textArea);
@@ -100,13 +104,24 @@ public class MarkDownEditorPane {
         markDownAST.set(parseMarkDown(""));
     }
 
-    private String getLineSeparatorOrDefault() {
-        String lineSeparator = Options.getLineSeparator();
-        return (lineSeparator != null) ? lineSeparator : System.getProperty( "line.separator", "\n" );
+
+    private void findHitsChanged() {
+        applyHighlighting(markDownAST.get());
+    }
+
+    private void applyHighlighting(Node astRoot){
+        List<MarkdownSyntaxHighlighter.ExtraStyledRanges> extraStyledRanges = findReplacePane.hasHits()
+                ? Arrays.asList(
+                new MarkdownSyntaxHighlighter.ExtraStyledRanges("hit", findReplacePane.getHits()),
+                new MarkdownSyntaxHighlighter.ExtraStyledRanges("hit-active", Collections.singletonList(findReplacePane.getActiveHit())))
+                : null;
+        MarkdownSyntaxHighlighter.highlight(textArea, astRoot, extraStyledRanges);
     }
 
     private void textChanged(String newText) {
+
         Node node=parseMarkDown(newText);
+        applyHighlighting(node);
         markDownText.set(newText);
         markDownAST.set(node);
     }
@@ -122,6 +137,7 @@ public class MarkDownEditorPane {
             extensions.add(AnchorLinkExtension.create());
             extensions.add(FootnoteExtension.create());
             options.set(Parser.EXTENSIONS, extensions);
+
             parser = Parser.builder(options).build();
         }
         return parser.parse(text);
@@ -180,6 +196,33 @@ public class MarkDownEditorPane {
             fos.flush();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void showFindPane(){
+        findReplacePane.showFindPane();
+    }
+
+    class InputMethodRequestsObject implements InputMethodRequests {
+
+        @Override
+        public Point2D getTextLocation(int offset) {
+            return new Point2D(0,0);
+        }
+
+        @Override
+        public int getLocationOffset(int x, int y) {
+            return 0;
+        }
+
+        @Override
+        public void cancelLatestCommittedText() {
+
+        }
+
+        @Override
+        public String getSelectedText() {
+            return "";
         }
     }
 }

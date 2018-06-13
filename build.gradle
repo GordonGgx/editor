@@ -28,8 +28,9 @@ repositories {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
-    compile project(':richtextfx')
-    compile 'com.jfoenix:jfoenix:8.0.3'
+//    compile project(':richtextfx')
+    compile group: 'org.fxmisc.richtext', name: 'richtextfx', version: '0.9.0'
+    compile 'com.jfoenix:jfoenix:8.0.4'
     def flexmarkVersion = '0.32.18'
     compile 'com.vladsch.flexmark:flexmark-all:' + flexmarkVersion
 //    compile 'com.vladsch.flexmark:flexmark-util:' + flexmarkVersion
@@ -74,7 +75,7 @@ jfx {
     identifier = null  // String - setting this for windows-bundlers makes it possible to generate upgradeable installers (using same GUID)
     vendor = "some serious business corp."
     nativeOutputDir = "build/jfx/native"
-    bundler = "windows.app" // set this to some specific, if your don't want all bundlers running, examples "windows.app", "jnlp", ...
+    bundler = "ALL" // set this to some specific, if your don't want all bundlers running, examples "windows.app", "jnlp", ...
     jvmProperties = null // Map<String, String>
     jvmArgs = null // List<String>
     userJvmArgs = null // Map<String, String>
@@ -84,12 +85,13 @@ jfx {
     needMenu = false
     bundleArguments = [
             // dont bundle JRE (not recommended, but increases build-size/-speed)
-            runtime: "D:\\Program Files\\Java\\jre1.8.0_162"
+//            runtime: "D:\\Program Files\\Java\\jre1.8.0_162"
+            runtime: "/usr/lib/jvm/java-8-oracle/jre"
     ]
-    appName = "mdEditor" // this is used for files below "src/main/deploy", e.g. "src/main/deploy/package/windows/project.ico"
+    appName = "GMarkdownEditor" // this is used for files below "src/main/deploy", e.g. "src/main/deploy/package/windows/project.ico"
     additionalBundlerResources = null // path to some additional resources for the bundlers when creating application-bundle
     additionalAppResources = null // path to some additional resources when creating application-bundle
-    secondaryLaunchers = [[appName:"somethingDifferent"], [appName:"somethingDifferent2"]]
+    //secondaryLaunchers = [[appName:"somethingDifferent"], [appName:"somethingDifferent2"]]
     fileAssociations = null // List<Map<String, Object>>
     noBlobSigning = false // when using bundler "jnlp", you can choose to NOT use blob signing
     customBundlers = null // List<String>

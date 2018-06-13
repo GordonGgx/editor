@@ -1,9 +1,13 @@
-package com.ggx.editor;
+package com.ggx.editor.controller;
 
+import com.ggx.editor.Main;
+import com.ggx.editor.editor.FooterPane;
 import com.ggx.editor.editor.MarkDownEditorPane;
+import com.ggx.editor.editor.setting.SettingsPane;
+import com.ggx.editor.editor.preview.MarkDownPreviewPane;
 import com.ggx.editor.fileos.FileMonitor;
 import com.ggx.editor.interfaces.TreeListAction;
-import com.ggx.editor.preview.MarkDownPreviewPane;
+import com.ggx.editor.options.Options;
 import com.ggx.editor.utils.FileUtil;
 import com.ggx.editor.widget.TextFieldTreeCellImpl;
 import com.jfoenix.controls.JFXButton;
@@ -17,9 +21,6 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.InputMethodEvent;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -36,7 +37,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
 
-public class MainController implements Initializable, TreeListAction,Runnable {
+public class MainController  implements Initializable, TreeListAction,Runnable {
 
     @FXML public StackPane root;
     @FXML public BorderPane rootPane;
@@ -54,7 +55,6 @@ public class MainController implements Initializable, TreeListAction,Runnable {
     @FXML public JFXDialog dialog;
     @FXML public JFXButton acceptButton;
     @FXML public ToolBar titleBar;
-    @FXML public StackPane searchContainer;
     @FXML public MenuItem findAction;
     @FXML public BorderPane editorContainer;
     @FXML public MenuItem pasteAction;
@@ -63,8 +63,7 @@ public class MainController implements Initializable, TreeListAction,Runnable {
     @FXML public MenuItem editorAction;
     @FXML public MenuItem eyeAction;
     @FXML public MenuItem previewAction;
-    @FXML public TextField tfSearch;
-    @FXML public TextField tfReplace;
+
 
     private final Image folderIcon = new Image(ClassLoader.getSystemResourceAsStream("icons/folder_16.png"));
     private final Image fileIcon = new Image(ClassLoader.getSystemResourceAsStream("icons/file_16.png"));
@@ -75,55 +74,80 @@ public class MainController implements Initializable, TreeListAction,Runnable {
 
     private MarkDownPreviewPane markDownPreview;
     private MarkDownEditorPane markDownEditorPane;
+    private FooterPane footerPane;
+    private SettingsPane settingsPane;
 
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        settingsPane=new SettingsPane();
         markDownPreview=new MarkDownPreviewPane();
-        markDownEditorPane=new MarkDownEditorPane();
+        markDownEditorPane=new MarkDownEditorPane(editorContainer);
+        footerPane=new FooterPane(markDownEditorPane.getTextArea());
+        rootPane.setBottom(footerPane.getNode());
+
 
         treeView.setShowRoot(true);
         treeView.setEditable(true);
         treeView.setCellFactory(param -> new TextFieldTreeCellImpl(this));
+        String oldFilePath=Options.getLastFilePath();
+        if(oldFilePath!=null){
+            File dir=new File(oldFilePath);
+            if(dir.exists()&&dir.isDirectory()){
+                ImageView iv = new ImageView(folderIcon);
+                iv.setSmooth(true);
+                iv.setViewport(new Rectangle2D(0, 0, 16, 16));
+                TreeItem<File> rootTree = new TreeItem<>(dir, iv);
+                searchFile(dir, rootTree);
+                treeView.setRoot(rootTree);
+                rootTree.setExpanded(true);
+                FileMonitor.get().addWatchFile(dir);
+                FileMonitor.get().setListener(this);
+                FileMonitor.get().watch();
+            }
 
+        }
 
         jfxHamburger.setMaxSize(20, 10);
         burgerTask3 = new HamburgerBackArrowBasicTransition(jfxHamburger);
         burgerTask3.setRate(-1);
 
-        EventStreams.changesOf(rootPane.widthProperty()).subscribe(numberChange -> {
-            splitePane.setDividerPosition(0, 0.18);
-            if (rightPane.getCenter() != null) {
-                markDownPreview.setWidth((rootPane.getWidth() - leftPane.getWidth()) / 2);
-            } else {
-                markDownPreview.setWidth(rootPane.getWidth() - leftPane.getWidth());
-            }
-        });
-        EventStreams.changesOf(toggle.selectedToggleProperty()).subscribe(toggleChange -> {
-            RadioButton rb = (RadioButton) toggleChange.getNewValue();
-            switch (rb.getId()) {
-                case "editor":
-                    rightPane.setRight(null);
-                    rightPane.setCenter(editorContainer);
-                    break;
-                case "eye":
-                    rightPane.setCenter(null);
-                    markDownPreview.setWidth(rootPane.getWidth() - leftPane.getWidth());
-                    rightPane.setRight(markDownPreview.getPreviewNode());
-                    break;
-                case "realTime":
-                    rightPane.setCenter(editorContainer);
-                    markDownPreview.setWidth((rootPane.getWidth() - leftPane.getWidth()) / 2);
-                    rightPane.setRight(markDownPreview.getPreviewNode());
-                    break;
-            }
-        });
+        EventStreams.changesOf(rootPane.widthProperty()).subscribe(this::changeWidth);
+        EventStreams.changesOf(toggle.selectedToggleProperty()).subscribe(this::changeEditorView);
 
         markDownPreview.markdownTextProperty().bind(markDownEditorPane.markDownTextProperty());
         markDownPreview.markdownASTProperty().bind(markDownEditorPane.markDownASTProperty());
         markDownPreview.scrollYProperty().bind(markDownEditorPane.scrollYProperty());
         markDownPreview.editorSelectionProperty().bind(markDownEditorPane.selectionProperty());
-        EventStreams.changesOf(tfSearch.textProperty()).map(Change::getNewValue).subscribe(this::onSearchTextChange);
+    }
+
+    private void changeWidth(Change<Number> numberChange){
+        splitePane.setDividerPosition(0, 0.18);
+        if (rightPane.getCenter() != null) {
+            markDownPreview.setWidth((rootPane.getWidth() - leftPane.getWidth()) / 2);
+        } else {
+            markDownPreview.setWidth(rootPane.getWidth() - leftPane.getWidth());
+        }
+    }
+
+    private void changeEditorView(Change<Toggle> toggleChange){
+        RadioButton rb = (RadioButton) toggleChange.getNewValue();
+        switch (rb.getId()) {
+            case "editor":
+                rightPane.setRight(null);
+                rightPane.setCenter(editorContainer);
+                break;
+            case "eye":
+                rightPane.setCenter(null);
+                markDownPreview.setWidth(rootPane.getWidth() - leftPane.getWidth());
+                rightPane.setRight(markDownPreview.getPreviewNode());
+                break;
+            case "realTime":
+                rightPane.setCenter(editorContainer);
+                markDownPreview.setWidth((rootPane.getWidth() - leftPane.getWidth()) / 2);
+                rightPane.setRight(markDownPreview.getPreviewNode());
+                break;
+        }
     }
 
     private void searchFile(File fileOrDir, TreeItem<File> rootItem) {
@@ -164,7 +188,6 @@ public class MainController implements Initializable, TreeListAction,Runnable {
 
     }
 
-
     @Override
     public void openFile(File file) {
         if(!file.exists()){
@@ -172,12 +195,7 @@ public class MainController implements Initializable, TreeListAction,Runnable {
         }
         currentFile = file;
         initOpenFile();
-        title.setText(FileUtil.prefixName(file) + " " + DateFormat.getDateInstance(DateFormat.DEFAULT, Locale.CHINESE).format(file.lastModified()));
-        if (file.getName().endsWith(".md")) {
-            title.setGraphic(new ImageView(new Image(ClassLoader.getSystemResourceAsStream("icons/md_24.png"))));
-        } else {
-            title.setGraphic(new ImageView(new Image(ClassLoader.getSystemResourceAsStream("icons/txt_24.png"))));
-        }
+        changeTextType(file);
         BufferedReader br = null;
         try {
             StringBuilder sb = new StringBuilder();
@@ -240,12 +258,7 @@ public class MainController implements Initializable, TreeListAction,Runnable {
     @Override
     public void modifyFile(File file) {
         currentFile = file;
-        title.setText(FileUtil.prefixName(file) + " " + DateFormat.getDateInstance(DateFormat.DEFAULT, Locale.CHINESE).format(file.lastModified()));
-        if (file.getName().endsWith(".md")) {
-            title.setGraphic(new ImageView(new Image(ClassLoader.getSystemResourceAsStream("icons/md_24.png"))));
-        } else {
-            title.setGraphic(new ImageView(new Image(ClassLoader.getSystemResourceAsStream("icons/txt_24.png"))));
-        }
+        changeTextType(file);
     }
 
     @FXML
@@ -253,6 +266,7 @@ public class MainController implements Initializable, TreeListAction,Runnable {
         DirectoryChooser chooser=new DirectoryChooser();
         File dir=chooser.showDialog(Main.get());
         if(dir!=null&&dir.exists()){
+            Options.setLastFilePath(dir.getAbsolutePath());
             clear();
             ImageView iv = new ImageView(folderIcon);
             iv.setSmooth(true);
@@ -277,6 +291,7 @@ public class MainController implements Initializable, TreeListAction,Runnable {
         if(!dir.exists()){
             if(dir.mkdir()){
                 System.out.println("创建成功");
+                Options.setLastFilePath(dir.getAbsolutePath());
                 FileMonitor.get().addWatchFile(dir);
                 clear();
                 ImageView iv = new ImageView(folderIcon);
@@ -328,6 +343,8 @@ public class MainController implements Initializable, TreeListAction,Runnable {
         titleBar.setVisible(true);
         titleBar.setManaged(true);
         toggleContainer.setVisible(true);
+        footerPane.showCoordinate(true);
+        footerPane.showTextType(true);
     }
 
     private void deleteFileAction(){
@@ -342,6 +359,8 @@ public class MainController implements Initializable, TreeListAction,Runnable {
         titleBar.setVisible(false);
         titleBar.setManaged(false);
         toggleContainer.setVisible(false);
+        footerPane.showCoordinate(false);
+        footerPane.showTextType(false);
     }
 
     //关闭面板并清理一些东西
@@ -355,23 +374,24 @@ public class MainController implements Initializable, TreeListAction,Runnable {
         title.setGraphic(null);
     }
 
+    private void changeTextType(File file){
+        footerPane.setTextType(FooterPane.TextType.None);
+        title.setText(FileUtil.prefixName(file) + " " + DateFormat.getDateInstance(DateFormat.DEFAULT, Locale.CHINESE).format(file.lastModified()));
+        if (file.getName().endsWith(".md")) {
+            title.setGraphic(new ImageView(new Image(ClassLoader.getSystemResourceAsStream("icons/md_24.png"))));
+            footerPane.setTextType(FooterPane.TextType.MarkDown);
+        } else {
+            title.setGraphic(new ImageView(new Image(ClassLoader.getSystemResourceAsStream("icons/txt_24.png"))));
+            footerPane.setTextType(FooterPane.TextType.Text);
+        }
+    }
+
     @FXML
     public void openFind() {
         if(currentFile==null){
             return;
         }
-        if(!searchContainer.isVisible()){
-            searchContainer.setVisible(true);
-            searchContainer.setManaged(true);
-        }
-    }
-
-    @FXML
-    public void closeFind() {
-        if(searchContainer.isVisible()){
-            searchContainer.setVisible(false);
-            searchContainer.setManaged(false);
-        }
+        markDownEditorPane.showFindPane();
     }
 
     @FXML
@@ -400,6 +420,7 @@ public class MainController implements Initializable, TreeListAction,Runnable {
 
     @FXML
     public void openSettings() {
+        settingsPane.showSettings();
 
     }
 
@@ -445,20 +466,5 @@ public class MainController implements Initializable, TreeListAction,Runnable {
         FileMonitor.get().addWatchFile(dir);
         FileMonitor.get().setListener(this);
         FileMonitor.get().watch();
-    }
-
-    @FXML
-    public void searchPreview(MouseEvent mouseEvent) {
-
-    }
-
-    @FXML
-    public void searchNext(MouseEvent mouseEvent) {
-
-    }
-
-
-    private void onSearchTextChange(String text) {
-        //通过bm算法快速查找到文中匹配的字符串的位置，并高亮显示
     }
 }

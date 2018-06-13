@@ -1,4 +1,4 @@
-package com.ggx.editor.preview;
+package com.ggx.editor.editor.preview;
 
 import com.ggx.editor.utils.Resource;
 import com.vladsch.flexmark.ast.FencedCodeBlock;
