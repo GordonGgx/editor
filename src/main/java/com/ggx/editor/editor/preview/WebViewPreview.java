@@ -1,11 +1,14 @@
 package com.ggx.editor.editor.preview;
 
 import com.ggx.editor.utils.Resource;
+import com.sun.webkit.WebPage;
 import com.vladsch.flexmark.ast.FencedCodeBlock;
 import com.vladsch.flexmark.ast.NodeVisitor;
 import javafx.concurrent.Worker;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.IndexRange;
+import javafx.scene.web.WebEvent;
 import javafx.scene.web.WebView;
 
 import java.io.BufferedReader;
@@ -41,6 +44,9 @@ public class WebViewPreview implements MarkDownPreviewPane.Preview{
         webView.setOnDragDropped(null);
         webView.setOnDragDetected(null);
         webView.setOnDragDone(null);
+
+
+        webView.getEngine().getLoadWorker().stateProperty().addListener(new HyperlinkRedirectListener(webView));
 
         webView.getEngine().getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
             if(newValue== Worker.State.SUCCEEDED&&!runWhenLoadedList.isEmpty()){
