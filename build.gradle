@@ -75,7 +75,7 @@ jfx {
     identifier = null  // String - setting this for windows-bundlers makes it possible to generate upgradeable installers (using same GUID)
     vendor = "some serious business corp."
     nativeOutputDir = "build/jfx/native"
-    bundler = "ALL" // set this to some specific, if your don't want all bundlers running, examples "windows.app", "jnlp", ...
+    bundler = "windows.app" // set this to some specific, if your don't want all bundlers running, examples "windows.app", "jnlp", ...
     jvmProperties = null // Map<String, String>
     jvmArgs = null // List<String>
     userJvmArgs = null // Map<String, String>
@@ -85,8 +85,8 @@ jfx {
     needMenu = false
     bundleArguments = [
             // dont bundle JRE (not recommended, but increases build-size/-speed)
-//            runtime: "D:\\Program Files\\Java\\jre1.8.0_162"
-            runtime: "/usr/lib/jvm/java-8-oracle/jre"
+            runtime: "D:\\Program Files\\Java\\jre1.8.0_131"
+//            runtime: "/usr/lib/jvm/java-8-oracle/jre"
     ]
     appName = "GMarkdownEditor" // this is used for files below "src/main/deploy", e.g. "src/main/deploy/package/windows/project.ico"
     additionalBundlerResources = null // path to some additional resources for the bundlers when creating application-bundle
