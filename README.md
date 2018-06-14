@@ -2,15 +2,27 @@
 
 使用JavaFx编写的开源Markdown编辑器，代码用于学习和分享使用。
 
-![image](image.png)
-### Feature ###
+![fxMarkdownEditor snapshot](snapshot.png)
+### Features ###
 
 * 编辑器语法高亮
 * 查找和替换
-* HTML时事预览
+* HTML即时预览
 * 文件树结构目录层次
 * 编辑，预览，编辑/预览切换
-* 支持Windows,Linux
+* 支持Windows,Linux,MacOs
+
+### TODO ###
+
+* 文章标题大纲
+* 数学公式支持
+* 时序图，流程图支持
+* 自定义CSS属性
+* 更多的设置选项
+
+### Requirements ###
+需要Java 8u40 或者更高的版本，当前不支持Java9.
+Gradle版本4.0或者更高。
 
 ### Thanks very much ###
 
@@ -26,4 +38,6 @@
 
 ### Contact ###
 
+如有遇到问题可以issues中提问。<br>
 我的QQ群：392154157
+

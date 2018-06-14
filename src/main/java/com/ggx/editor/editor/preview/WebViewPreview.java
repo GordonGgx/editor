@@ -1,11 +1,14 @@
 package com.ggx.editor.editor.preview;
 
 import com.ggx.editor.utils.Resource;
+import com.sun.webkit.WebPage;
 import com.vladsch.flexmark.ast.FencedCodeBlock;
 import com.vladsch.flexmark.ast.NodeVisitor;
 import javafx.concurrent.Worker;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.IndexRange;
+import javafx.scene.web.WebEvent;
 import javafx.scene.web.WebView;
 
 import java.io.BufferedReader;
@@ -34,13 +37,16 @@ public class WebViewPreview implements MarkDownPreviewPane.Preview{
     private void createNodes(){
         webView=new WebView();
         webView.setFocusTraversable(false);
-        // disable WebView default drag and drop handler to allow dropping markdown files
+        // 禁用webView默认拖拽事件
         webView.setOnDragEntered(null);
         webView.setOnDragExited(null);
         webView.setOnDragOver(null);
         webView.setOnDragDropped(null);
         webView.setOnDragDetected(null);
         webView.setOnDragDone(null);
+
+
+        webView.getEngine().getLoadWorker().stateProperty().addListener(new HyperlinkRedirectListener(webView));
 
         webView.getEngine().getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
             if(newValue== Worker.State.SUCCEEDED&&!runWhenLoadedList.isEmpty()){

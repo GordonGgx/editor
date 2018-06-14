@@ -13,6 +13,7 @@ import com.ggx.editor.widget.TextFieldTreeCellImpl;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXDialog;
 import com.jfoenix.controls.JFXHamburger;
+import com.jfoenix.svg.SVGGlyphLoader;
 import com.jfoenix.transitions.hamburger.HamburgerBackArrowBasicTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -24,6 +25,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.shape.SVGPath;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import org.reactfx.Change;
@@ -107,7 +109,6 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
             }
 
         }
-
         jfxHamburger.setMaxSize(20, 10);
         burgerTask3 = new HamburgerBackArrowBasicTransition(jfxHamburger);
         burgerTask3.setRate(-1);
