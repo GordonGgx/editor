@@ -36,7 +36,6 @@ public class Main extends Application{
 
     private static ExecutorService executor;
     private static Stage main;
-    private  InvalidationListener listener;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -49,7 +48,7 @@ public class Main extends Application{
         Parent root=loader.load();
         Scene scene=new Scene(root);
         scene.setFill(Color.GHOSTWHITE);
-        listener=e-> updateFont(root);
+        InvalidationListener listener = e -> updateFont(root);
         WeakInvalidationListener weakInvalidationListener=new WeakInvalidationListener(listener);
         Options.fontSizeProperty().addListener(weakInvalidationListener);
         Options.fontFamilyProperty().addListener(weakInvalidationListener);

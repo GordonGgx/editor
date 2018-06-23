@@ -5,9 +5,13 @@ import com.vladsch.flexmark.Extension;
 import com.vladsch.flexmark.ast.Node;
 import com.vladsch.flexmark.ext.anchorlink.AnchorLinkExtension;
 import com.vladsch.flexmark.ext.footnotes.FootnoteExtension;
+import com.vladsch.flexmark.ext.gfm.issues.GfmIssuesExtension;
 import com.vladsch.flexmark.ext.tables.TablesExtension;
 import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.parser.ParserEmulationProfile;
+import com.vladsch.flexmark.profiles.pegdown.Extensions;
+import com.vladsch.flexmark.profiles.pegdown.PegdownOptionsAdapter;
+import com.vladsch.flexmark.util.options.DataHolder;
 import com.vladsch.flexmark.util.options.MutableDataSet;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -136,6 +140,8 @@ public class MarkDownEditorPane {
             extensions.add(TablesExtension.create());
             extensions.add(AnchorLinkExtension.create());
             extensions.add(FootnoteExtension.create());
+            extensions.add(GfmIssuesExtension.create());
+
             options.set(Parser.EXTENSIONS, extensions);
 
             parser = Parser.builder(options).build();

@@ -92,15 +92,25 @@ public class TextFieldTreeCellImpl extends TreeCell<File> {
         setText(null);
         setGraphic(textField);
         textField.requestFocus();
-        textField.selectAll();
+        String name=textField.getText();
+        textField.selectRange(0,name.lastIndexOf("."));
+//        textField.selectAll();
     }
 
     @Override
     public void cancelEdit() {
         super.cancelEdit();
         System.out.println("取消编辑");
+        getTreeView().setEditable(false);
         setText(getItem().getName());
         setGraphic(getTreeItem().getGraphic());
+    }
+
+    @Override
+    public void commitEdit(File newValue) {
+        super.commitEdit(newValue);
+        getTreeView().setEditable(false);
+        System.out.println("编辑成功"+newValue.getName());
     }
 
     @Override
@@ -111,7 +121,6 @@ public class TextFieldTreeCellImpl extends TreeCell<File> {
             setGraphic(null);
         } else {
             if (isEditing()) {
-                System.out.println("编辑");
                 if (textField != null) {
                     textField.setText(getString());
                 }
@@ -184,7 +193,15 @@ public class TextFieldTreeCellImpl extends TreeCell<File> {
                 }
             }
         });
-        fileMenu.getItems().addAll(addFile,delete);
+        MenuItem rename=new MenuItem("重命名");
+        rename.setOnAction(event -> {
+            TreeView<File> treeView=getTreeView();
+            treeView.setEditable(true);
+            treeView.edit(getTreeItem());
+        });
+        rename.getStyleClass().add("menu-item");
+        fileMenu.getItems().addAll(addFile,rename,delete);
+
     }
 
     private void createTextField() {
@@ -204,7 +221,6 @@ public class TextFieldTreeCellImpl extends TreeCell<File> {
         });
 
     }
-
     private String getString() {
         return getItem() == null ? "" : getItem().getName();
     }

@@ -90,7 +90,7 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
 
 
         treeView.setShowRoot(true);
-        treeView.setEditable(true);
+        treeView.setEditable(false);
         treeView.setCellFactory(param -> new TextFieldTreeCellImpl(this));
         String oldFilePath=Options.getLastFilePath();
         if(oldFilePath!=null){
@@ -261,6 +261,7 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
         currentFile = file;
         changeTextType(file);
     }
+
 
     @FXML
     public void openDir() {
