@@ -120,6 +120,7 @@ public class WebViewPreview implements MarkDownPreviewPane.Preview{
                 "<!DOCTYPE html>\n"
                         + "<html>\n"
                         + "<head>\n"
+                        + "<meta charset=\"utf-8\" />"
                         + "<link rel=\"stylesheet\" href=\"" + Resource.getResource("css/markdownpad-github.css") + "\">\n"
                         + "<style>\n"
                         + ".mwfx-editor-selection {\n"

@@ -194,13 +194,6 @@
                                             </ImageView>
                                         </graphic>
                                     </RadioButton>
-                                    <RadioButton fx:id="eye" toggleGroup="$toggle" prefWidth="50" alignment="CENTER">
-                                        <graphic>
-                                            <ImageView>
-                                                <Image url="@/icons/eye_16.png"/>
-                                            </ImageView>
-                                        </graphic>
-                                    </RadioButton>
                                     <RadioButton fx:id="realTime" toggleGroup="$toggle" prefWidth="50"
                                                  alignment="CENTER">
                                         <graphic>
@@ -209,6 +202,14 @@
                                             </ImageView>
                                         </graphic>
                                     </RadioButton>
+                                    <RadioButton fx:id="eye" toggleGroup="$toggle" prefWidth="50" alignment="CENTER">
+                                        <graphic>
+                                            <ImageView>
+                                                <Image url="@/icons/eye_16.png"/>
+                                            </ImageView>
+                                        </graphic>
+                                    </RadioButton>
+
                                 </HBox>
                             </StackPane>
                             <Separator orientation="HORIZONTAL"/>
