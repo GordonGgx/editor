@@ -43,7 +43,7 @@ public class Main extends Application{
         main=primaryStage;
         executor=Executors.newSingleThreadExecutor();
         primaryStage.getIcons().add(new Image("icons/markdownwriterfx32.png"));
-        primaryStage.setTitle("Editor");
+        primaryStage.setTitle("MarkBook");
         FXMLLoader loader=new FXMLLoader(ClassLoader.getSystemResource("fxml/main.fxml"));
         Parent root=loader.load();
         Scene scene=new Scene(root);

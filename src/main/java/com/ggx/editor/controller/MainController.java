@@ -19,6 +19,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Cursor;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -36,7 +37,9 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public class MainController  implements Initializable, TreeListAction,Runnable {
@@ -194,31 +197,44 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
         if(!file.exists()){
             return;
         }
+        if(currentFile==file){
+            return;
+        }
         currentFile = file;
         initOpenFile();
         changeTextType(file);
-        BufferedReader br = null;
-        try {
-            StringBuilder sb = new StringBuilder();
-            br = new BufferedReader(new FileReader(file));
-            br.lines().map(s -> s + "\n").forEach(sb::append);
-            markDownEditorPane.setNewFileContent(sb.toString());
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+        rootPane.setCursor(Cursor.WAIT);
         if (fileContainer.getChildren().size() == 2) {
             fileContainer.getChildren().remove(1);
         }
         fileContainer.getChildren().add(markDownEditorPane.getScrollPane());
-        markDownEditorPane.getScrollPane().scrollYToPixel(0);
+        CompletableFuture.supplyAsync(()->{
+            BufferedReader br = null;
+            StringBuilder sb = new StringBuilder();
+            try {
+                br = new BufferedReader(new FileReader(file));
+                br.lines().map(s -> s + "\n").forEach(sb::append);
+//                markDownEditorPane.setNewFileContent(sb.toString());
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                return "";
+            } finally {
+                if (br != null) {
+                    try {
+                        br.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            return sb.toString();
+        }).thenAccept(s -> Platform.runLater(()-> {
+            markDownEditorPane.setNewFileContent(s);
+            markDownEditorPane.getScrollPane().scrollYToPixel(0);
+            rootPane.setCursor(Cursor.DEFAULT);
+        }));
+
+
 
 
     }
