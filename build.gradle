@@ -54,7 +54,7 @@ jfx {
     verbose = true
     mainClass = "com.ggx.editor.Main"
     jfxAppOutputDir = "build/jfx/app"
-    jfxMainAppJarName = "editor-jfx.jar"
+    jfxMainAppJarName = "mark-book.jar"
     deployDir = "src/main/deploy"
     useEnvironmentRelativeExecutables = true
     libFolderName = "lib"
@@ -88,7 +88,7 @@ jfx {
 //            runtime: "D:\\Program Files\\Java\\jre1.8.0_131"
             runtime: "/usr/lib/jvm/java-8-oracle/jre"
     ]
-    appName = "GMarkdownEditor" // this is used for files below "src/main/deploy", e.g. "src/main/deploy/package/windows/project.ico"
+    appName = "MarkBook" // this is used for files below "src/main/deploy", e.g. "src/main/deploy/package/windows/project.ico"
     additionalBundlerResources = null // path to some additional resources for the bundlers when creating application-bundle
     additionalAppResources = null // path to some additional resources when creating application-bundle
     //secondaryLaunchers = [[appName:"somethingDifferent"], [appName:"somethingDifferent2"]]
