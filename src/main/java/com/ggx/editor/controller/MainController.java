@@ -128,11 +128,12 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
 
     private void newTitle(String markDown){
         outLine.getChildren().clear();
+        lines=0;
         CompletableFuture.runAsync(()->{
             try (BufferedReader br=new BufferedReader(new StringReader(markDown))){
                 CommonmarkPreviewRenderer renderer= (CommonmarkPreviewRenderer) markDownPreview.getRenderer();
                 br.lines().forEach(s -> {
-                    extractTitles(renderer,s);
+                    extractTitles(renderer,s,lines);
                     lines++;
                 });
             } catch (IOException e) {
@@ -220,7 +221,6 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
             return;
         }
         currentFile = file;
-        lines=0;
         initOpenFile();
         changeTextType(file);
         rootPane.setCursor(Cursor.WAIT);
@@ -228,14 +228,15 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
             fileContainer.getChildren().remove(1);
         }
         fileContainer.getChildren().add(markDownEditorPane.getScrollPane());
-
+        lines=0;
+        outLine.getChildren().clear();
         CompletableFuture.supplyAsync(()->{
             StringBuilder sb = new StringBuilder();
             try (BufferedReader br=new BufferedReader(new FileReader(file))){
                 CommonmarkPreviewRenderer renderer= (CommonmarkPreviewRenderer) markDownPreview.getRenderer();
                 br.lines().map(s -> s + "\n").forEach(s -> {
                     sb.append(s);
-                    extractTitles(renderer,s);
+                    extractTitles(renderer,s,lines);
                     lines++;
                 });
             } catch (IOException e) {
@@ -251,7 +252,7 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
         }));
     }
 
-    private void extractTitles(CommonmarkPreviewRenderer renderer,String s){
+    private void extractTitles(CommonmarkPreviewRenderer renderer,String s,int lines){
         if(s.startsWith("# ")){
             renderer.update(s,null);
             String title=HTMLTagParser.getTextByHTMLParser(renderer.getHtml());

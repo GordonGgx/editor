@@ -72,19 +72,24 @@ public class MarkDownEditorPane {
         textSize.addListener((observable, oldValue, newValue) -> textArea.setStyle("-fx-font-size:"+newValue));
         textSize.setValue(16);
         EventStreams.changesOf(textArea.textProperty())
+                .filter(stringChange -> stringChange.getNewValue().length()!=0)
                 .subscribe(stringChange -> textChanged(stringChange.getNewValue()));
         EventStreams.changesOf(textArea.currentParagraphProperty())
-                .map(integerChange -> textArea.getParagraph(integerChange.getOldValue()).getText())
+                .map(integerChange -> {
+                    if(textArea.getText().length()==0){
+                        return null;
+                    }
+                    return textArea.getParagraph(integerChange.getOldValue()).getText();
+                })
                 .filter(s ->
+                        s!=null&&(
                         s.startsWith("# ")
                         ||s.startsWith("## ")
                         ||s.startsWith("### ")
                         ||s.startsWith("#### ")
                         ||s.startsWith("##### ")
-                        ||s.startsWith("###### "))
-        .subscribe(s -> {
-            title.setValue(textArea.getText());
-        });
+                        ||s.startsWith("###### ")))
+        .subscribe(s -> title.setValue(textArea.getText()));
 
         ChangeListener<Double> scrollYListener=(observable, oldValue, newValue) -> {
             double value=textArea.estimatedScrollYProperty().getValue();
@@ -230,7 +235,6 @@ public class MarkDownEditorPane {
     }
 
     public void jumpToLine(int lineNum){
-
 //        textArea.showParagraphAtTop(lineNum);
         Timeline tl=new Timeline();
         SimpleDoubleProperty property=new SimpleDoubleProperty();
