@@ -93,6 +93,9 @@ public class MarkDownPreviewPane {
         });
     }
 
+    public Renderer getRenderer() {
+        return renderer;
+    }
 
     interface Renderer {
         void update(String markdownText, Node astRoot);

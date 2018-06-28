@@ -30,10 +30,10 @@ public class AppearancePane {
             GridPane gridPane=FXMLLoader.load(ClassLoader.getSystemResource("fxml/appearancePane.fxml"));
 
             JFXComboBox<String> fontFamilyBox= (JFXComboBox<String>) gridPane.lookup("#fonts");
+            fontFamilyBox.setValue(Options.getFontFamily());
             CompletableFuture.supplyAsync(()-> GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames())
                     .thenAccept(strings -> Platform.runLater(()-> {
                         fontFamilyBox.setItems(FXCollections.observableArrayList(strings));
-                        fontFamilyBox.setValue(Options.getFontFamily());
                     }));
             JFXComboBox<Integer> fontSizeBox= (JFXComboBox<Integer>) gridPane.lookup("#fontSize");
             fontSizeBox.setItems(fontSize);

@@ -116,6 +116,7 @@ public class WebViewPreview implements MarkDownPreviewPane.Preview{
                 ? ("  onload='window.scrollTo("+lastScrollX+", "+lastScrollY+");'")
                 : "";
         String html=renderer.getHtml();
+
         webView.getEngine().loadContent(
                 "<!DOCTYPE html>\n"
                         + "<html>\n"

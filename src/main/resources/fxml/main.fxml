@@ -164,9 +164,44 @@
         <center>
             <SplitPane fx:id="splitePane" BorderPane.alignment="CENTER">
                 <BorderPane fx:id="leftPane">
-
+                    <fx:define>
+                        <ToggleGroup fx:id="menuToggle"/>
+                    </fx:define>
+                    <top>
+                        <HBox alignment="CENTER" prefHeight="30">
+                            <RadioButton
+                                    toggleGroup="$menuToggle"
+                                    styleClass="menuSelect"
+                                    prefHeight="30"
+                                    prefWidth="80"
+                                    alignment="CENTER"
+                                    onMouseClicked="#onCatalog">
+                                <text>目录</text>
+                                <HBox.margin>
+                                    <Insets right="5"/>
+                                </HBox.margin>
+                            </RadioButton>
+                            <RadioButton
+                                    toggleGroup="$menuToggle"
+                                    styleClass="menuSelect"
+                                    prefHeight="30"
+                                    prefWidth="80"
+                                    alignment="CENTER"
+                                    onMouseClicked="#onOutLine">
+                                <text>大纲</text>
+                                <HBox.margin>
+                                    <Insets left="5"/>
+                                </HBox.margin>
+                            </RadioButton>
+                        </HBox>
+                    </top>
                     <center>
-                        <TreeView fx:id="treeView" SplitPane.resizableWithParent="false"/>
+                        <StackPane>
+                            <TreeView  fx:id="treeView" SplitPane.resizableWithParent="false"/>
+                            <VBox style="-fx-background-color: white" visible="false" managed="false" fx:id="outLine" SplitPane.resizableWithParent="false">
+
+                            </VBox>
+                        </StackPane>
                     </center>
                 </BorderPane>
                 <BorderPane fx:id="rightPane">

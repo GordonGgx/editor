@@ -44,7 +44,6 @@ public class TextFieldTreeCellImpl extends TreeCell<File> {
             List<File> files=new ArrayList<>();
             files.add(getItem());
             content.putFiles(files);
-//            content.putUrl(getItem().toURI().toString());
             dragboard.setContent(content);
         });
         setOnDragEntered(event -> {
@@ -94,7 +93,6 @@ public class TextFieldTreeCellImpl extends TreeCell<File> {
         textField.requestFocus();
         String name=textField.getText();
         textField.selectRange(0,name.lastIndexOf("."));
-//        textField.selectAll();
     }
 
     @Override

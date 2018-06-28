@@ -161,3 +161,29 @@
     -fx-font-family: "Ubuntu Mono";
     -fx-font-size: 16px;
 }
+
+#outline .tree-cell .tree-disclosure-node .arrow{
+    -fx-shape: "M 0 1 z";
+}
+
+.test:focused{
+    -fx-border-color: transparent;
+}
+
+.menuSelect{
+    -fx-stroke-width: 10;
+    -fx-stroke: black;
+    -fx-border-color: black;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+    -fx-background-insets: 0;
+}
+.menuSelect:hover{
+    -fx-background-color: #F0F0F0;
+    -fx-cursor: hand;
+}
+.menuSelect:selected{
+
+    -fx-border-width: 0 0 5 0;
+    -fx-background-color: transparent;
+}

@@ -3,19 +3,22 @@ package com.ggx.editor.controller;
 import com.ggx.editor.Main;
 import com.ggx.editor.editor.FooterPane;
 import com.ggx.editor.editor.MarkDownEditorPane;
-import com.ggx.editor.editor.setting.SettingsPane;
+import com.ggx.editor.editor.preview.CommonmarkPreviewRenderer;
 import com.ggx.editor.editor.preview.MarkDownPreviewPane;
+import com.ggx.editor.editor.setting.SettingsPane;
 import com.ggx.editor.fileos.FileMonitor;
 import com.ggx.editor.interfaces.TreeListAction;
 import com.ggx.editor.options.Options;
 import com.ggx.editor.utils.FileUtil;
+import com.ggx.editor.utils.HTMLTagParser;
 import com.ggx.editor.widget.TextFieldTreeCellImpl;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXDialog;
 import com.jfoenix.controls.JFXHamburger;
-import com.jfoenix.svg.SVGGlyphLoader;
 import com.jfoenix.transitions.hamburger.HamburgerBackArrowBasicTransition;
 import javafx.application.Platform;
+import javafx.beans.binding.ObjectBinding;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Rectangle2D;
@@ -26,7 +29,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
-import javafx.scene.shape.SVGPath;
+import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import org.reactfx.Change;
@@ -35,10 +38,7 @@ import org.reactfx.EventStreams;
 import java.io.*;
 import java.net.URL;
 import java.text.DateFormat;
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -68,6 +68,7 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
     @FXML public MenuItem editorAction;
     @FXML public MenuItem eyeAction;
     @FXML public MenuItem previewAction;
+    @FXML public VBox outLine;
 
 
     private final Image folderIcon = new Image(ClassLoader.getSystemResourceAsStream("icons/folder_16.png"));
@@ -85,7 +86,6 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        settingsPane=new SettingsPane();
         markDownPreview=new MarkDownPreviewPane();
         markDownEditorPane=new MarkDownEditorPane(editorContainer);
         footerPane=new FooterPane(markDownEditorPane.getTextArea());
@@ -123,6 +123,23 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
         markDownPreview.markdownASTProperty().bind(markDownEditorPane.markDownASTProperty());
         markDownPreview.scrollYProperty().bind(markDownEditorPane.scrollYProperty());
         markDownPreview.editorSelectionProperty().bind(markDownEditorPane.selectionProperty());
+        markDownEditorPane.titleProperty().addListener((observable, oldValue, newValue) -> newTitle(newValue));
+    }
+
+    private void newTitle(String markDown){
+        outLine.getChildren().clear();
+        CompletableFuture.runAsync(()->{
+            try (BufferedReader br=new BufferedReader(new StringReader(markDown))){
+                CommonmarkPreviewRenderer renderer= (CommonmarkPreviewRenderer) markDownPreview.getRenderer();
+                br.lines().forEach(s -> {
+                    extractTitles(renderer,s);
+                    lines++;
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
     }
 
     private void changeWidth(Change<Number> numberChange){
@@ -192,6 +209,8 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
 
     }
 
+    private int lines;
+
     @Override
     public void openFile(File file) {
         if(!file.exists()){
@@ -201,6 +220,7 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
             return;
         }
         currentFile = file;
+        lines=0;
         initOpenFile();
         changeTextType(file);
         rootPane.setCursor(Cursor.WAIT);
@@ -208,35 +228,109 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
             fileContainer.getChildren().remove(1);
         }
         fileContainer.getChildren().add(markDownEditorPane.getScrollPane());
+
         CompletableFuture.supplyAsync(()->{
-            BufferedReader br = null;
             StringBuilder sb = new StringBuilder();
-            try {
-                br = new BufferedReader(new FileReader(file));
-                br.lines().map(s -> s + "\n").forEach(sb::append);
-//                markDownEditorPane.setNewFileContent(sb.toString());
-            } catch (FileNotFoundException e) {
+            try (BufferedReader br=new BufferedReader(new FileReader(file))){
+                CommonmarkPreviewRenderer renderer= (CommonmarkPreviewRenderer) markDownPreview.getRenderer();
+                br.lines().map(s -> s + "\n").forEach(s -> {
+                    sb.append(s);
+                    extractTitles(renderer,s);
+                    lines++;
+                });
+            } catch (IOException e) {
                 e.printStackTrace();
                 return "";
-            } finally {
-                if (br != null) {
-                    try {
-                        br.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
             }
             return sb.toString();
         }).thenAccept(s -> Platform.runLater(()-> {
             markDownEditorPane.setNewFileContent(s);
             markDownEditorPane.getScrollPane().scrollYToPixel(0);
             rootPane.setCursor(Cursor.DEFAULT);
+
         }));
+    }
 
-
-
-
+    private void extractTitles(CommonmarkPreviewRenderer renderer,String s){
+        if(s.startsWith("# ")){
+            renderer.update(s,null);
+            String title=HTMLTagParser.getTextByHTMLParser(renderer.getHtml());
+            Hyperlink hyperlink=new Hyperlink(title);
+            hyperlink.getStyleClass().add("test");
+            hyperlink.setUserData(""+lines);
+            hyperlink.setOnAction(event -> {
+                markDownEditorPane.jumpToLine(Integer.parseInt((String) hyperlink.getUserData()));
+                hyperlink.setVisited(false);
+            });
+            Platform.runLater(()->{
+                outLine.getChildren().add(hyperlink);
+            });
+        }else if(s.startsWith("## ")){
+            renderer.update(s,null);
+            String title=HTMLTagParser.getTextByHTMLParser(renderer.getHtml());
+            Hyperlink hyperlink=new Hyperlink("  "+title);
+            hyperlink.getStyleClass().add("test");
+            hyperlink.setUserData(""+lines);
+            hyperlink.setOnAction(event -> {
+                markDownEditorPane.jumpToLine(Integer.parseInt((String) hyperlink.getUserData()));
+                hyperlink.setVisited(false);
+            });
+            Platform.runLater(()->{
+                outLine.getChildren().add(hyperlink);
+            });
+        }else if(s.startsWith("### ")){
+            renderer.update(s,null);
+            String title=HTMLTagParser.getTextByHTMLParser(renderer.getHtml());
+            Hyperlink hyperlink=new Hyperlink("   "+title);
+            hyperlink.getStyleClass().add("test");
+            hyperlink.setUserData(""+lines);
+            hyperlink.setOnAction(event -> {
+                markDownEditorPane.jumpToLine(Integer.parseInt((String) hyperlink.getUserData()));
+                hyperlink.setVisited(false);
+            });
+            Platform.runLater(()->{
+                outLine.getChildren().add(hyperlink);
+            });
+        }else if(s.startsWith("#### ")){
+            renderer.update(s,null);
+            String title=HTMLTagParser.getTextByHTMLParser(renderer.getHtml());
+            Hyperlink hyperlink=new Hyperlink("    "+title);
+            hyperlink.getStyleClass().add("test");
+            hyperlink.setUserData(""+lines);
+            hyperlink.setOnAction(event -> {
+                markDownEditorPane.jumpToLine(Integer.parseInt((String) hyperlink.getUserData()));
+                hyperlink.setVisited(false);
+            });
+            Platform.runLater(()->{
+                outLine.getChildren().add(hyperlink);
+            });
+        }else if(s.startsWith("###### ")){
+            renderer.update(s,null);
+            String title=HTMLTagParser.getTextByHTMLParser(renderer.getHtml());
+            Hyperlink hyperlink=new Hyperlink("     "+title);
+            hyperlink.getStyleClass().add("test");
+            hyperlink.setUserData(""+lines);
+            hyperlink.setOnAction(event -> {
+                markDownEditorPane.jumpToLine(Integer.parseInt((String) hyperlink.getUserData()));
+                hyperlink.setVisited(false);
+            });
+            Platform.runLater(()->{
+                outLine.getChildren().add(hyperlink);
+            });
+        }else if(s.startsWith("######## ")){
+            renderer.update(s,null);
+            String title=HTMLTagParser.getTextByHTMLParser(renderer.getHtml());
+            Hyperlink hyperlink=new Hyperlink("      "+title);
+            hyperlink.getStyleClass().add("test");
+            hyperlink.setUserData(""+lines);
+            hyperlink.setOnAction(event -> {
+                markDownEditorPane.jumpToLine(Integer.parseInt((String) hyperlink.getUserData()));
+                hyperlink.setVisited(false);
+            });
+            Platform.runLater(()->{
+                outLine.getChildren().add(hyperlink);
+            });
+        }
     }
 
     @Override
@@ -438,6 +532,9 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
 
     @FXML
     public void openSettings() {
+        if(settingsPane==null){
+            settingsPane=new SettingsPane();
+        }
         settingsPane.showSettings();
 
     }
@@ -484,5 +581,27 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
         FileMonitor.get().addWatchFile(dir);
         FileMonitor.get().setListener(this);
         FileMonitor.get().watch();
+    }
+
+    @FXML
+    public void onCatalog() {
+        if(treeView.isVisible()){
+            return;
+        }
+        outLine.setManaged(false);
+        outLine.setVisible(false);
+        treeView.setManaged(true);
+        treeView.setVisible(true);
+    }
+
+    @FXML
+    public void onOutLine() {
+
+        if(!outLine.isVisible()){
+            treeView.setManaged(false);
+            treeView.setVisible(false);
+            outLine.setManaged(true);
+            outLine.setVisible(true);
+        }
     }
 }

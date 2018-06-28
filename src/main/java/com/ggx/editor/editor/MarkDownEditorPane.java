@@ -13,23 +13,29 @@ import com.vladsch.flexmark.profiles.pegdown.Extensions;
 import com.vladsch.flexmark.profiles.pegdown.PegdownOptionsAdapter;
 import com.vladsch.flexmark.util.options.DataHolder;
 import com.vladsch.flexmark.util.options.MutableDataSet;
-import javafx.beans.property.ReadOnlyDoubleWrapper;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.ReadOnlyStringWrapper;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
+import javafx.animation.TranslateTransition;
+import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.EventType;
 import javafx.geometry.Point2D;
 import javafx.scene.control.IndexRange;
 import javafx.scene.input.InputMethodRequests;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.util.Duration;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.wellbehaved.event.EventPattern;
 import org.fxmisc.wellbehaved.event.InputMap;
 import org.fxmisc.wellbehaved.event.Nodes;
+import org.reactfx.Change;
 import org.reactfx.EventStreams;
 
 import java.io.BufferedWriter;
@@ -52,6 +58,7 @@ public class MarkDownEditorPane {
     private ReadOnlyDoubleWrapper scrollY=new ReadOnlyDoubleWrapper();
     private ReadOnlyObjectWrapper<Node> markDownAST=new ReadOnlyObjectWrapper<>();
     private ReadOnlyStringWrapper markDownText=new ReadOnlyStringWrapper();
+    private ReadOnlyStringWrapper title=new ReadOnlyStringWrapper();
 
     public MarkDownEditorPane(BorderPane container) {
         textArea=new CodeArea();
@@ -65,9 +72,20 @@ public class MarkDownEditorPane {
         textSize.addListener((observable, oldValue, newValue) -> textArea.setStyle("-fx-font-size:"+newValue));
         textSize.setValue(16);
         EventStreams.changesOf(textArea.textProperty())
-                /*.reduceSuccessions((stringChange, stringChange2) -> stringChange2,
-                        Duration.ofMillis(500))*/
                 .subscribe(stringChange -> textChanged(stringChange.getNewValue()));
+        EventStreams.changesOf(textArea.currentParagraphProperty())
+                .map(integerChange -> textArea.getParagraph(integerChange.getOldValue()).getText())
+                .filter(s ->
+                        s.startsWith("# ")
+                        ||s.startsWith("## ")
+                        ||s.startsWith("### ")
+                        ||s.startsWith("#### ")
+                        ||s.startsWith("##### ")
+                        ||s.startsWith("###### "))
+        .subscribe(s -> {
+            title.setValue(textArea.getText());
+        });
+
         ChangeListener<Double> scrollYListener=(observable, oldValue, newValue) -> {
             double value=textArea.estimatedScrollYProperty().getValue();
             double maxValue=textArea.totalHeightEstimateProperty()
@@ -191,6 +209,8 @@ public class MarkDownEditorPane {
         return scrollPane;
     }
 
+    public ReadOnlyStringWrapper titleProperty(){return title;}
+
     public CodeArea getTextArea() {
         return textArea;
     }
@@ -208,6 +228,22 @@ public class MarkDownEditorPane {
     public void showFindPane(){
         findReplacePane.showFindPane();
     }
+
+    public void jumpToLine(int lineNum){
+
+//        textArea.showParagraphAtTop(lineNum);
+        Timeline tl=new Timeline();
+        SimpleDoubleProperty property=new SimpleDoubleProperty();
+        property.set(textArea.getEstimatedScrollY());
+        property.addListener((observable, oldValue, newValue) -> {
+            textArea.scrollYToPixel(newValue.doubleValue());
+        });
+        KeyValue kv=new KeyValue(property,textArea.getAbsolutePosition(lineNum,0));
+        KeyFrame kf=new KeyFrame(Duration.millis(500),kv);
+        tl.getKeyFrames().add(kf);
+        tl.play();
+    }
+
 
     class InputMethodRequestsObject implements InputMethodRequests {
 
