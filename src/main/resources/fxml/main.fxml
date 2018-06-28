@@ -175,6 +175,7 @@
                                     prefHeight="30"
                                     prefWidth="80"
                                     alignment="CENTER"
+                                    selected="true"
                                     onMouseClicked="#onCatalog">
                                 <text>目录</text>
                                 <HBox.margin>
