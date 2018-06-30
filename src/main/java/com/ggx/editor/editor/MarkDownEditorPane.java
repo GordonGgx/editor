@@ -9,24 +9,17 @@ import com.vladsch.flexmark.ext.gfm.issues.GfmIssuesExtension;
 import com.vladsch.flexmark.ext.tables.TablesExtension;
 import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.parser.ParserEmulationProfile;
-import com.vladsch.flexmark.profiles.pegdown.Extensions;
-import com.vladsch.flexmark.profiles.pegdown.PegdownOptionsAdapter;
-import com.vladsch.flexmark.util.options.DataHolder;
 import com.vladsch.flexmark.util.options.MutableDataSet;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
-import javafx.animation.TranslateTransition;
 import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.event.EventType;
 import javafx.geometry.Point2D;
 import javafx.scene.control.IndexRange;
 import javafx.scene.input.InputMethodRequests;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.util.Duration;
 import org.fxmisc.flowless.VirtualizedScrollPane;
@@ -35,7 +28,6 @@ import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.wellbehaved.event.EventPattern;
 import org.fxmisc.wellbehaved.event.InputMap;
 import org.fxmisc.wellbehaved.event.Nodes;
-import org.reactfx.Change;
 import org.reactfx.EventStreams;
 
 import java.io.BufferedWriter;
@@ -59,6 +51,7 @@ public class MarkDownEditorPane {
     private ReadOnlyObjectWrapper<Node> markDownAST=new ReadOnlyObjectWrapper<>();
     private ReadOnlyStringWrapper markDownText=new ReadOnlyStringWrapper();
     private ReadOnlyStringWrapper title=new ReadOnlyStringWrapper();
+    private boolean isTextChange=false;
 
     public MarkDownEditorPane(BorderPane container) {
         textArea=new CodeArea();
@@ -73,9 +66,14 @@ public class MarkDownEditorPane {
         textSize.setValue(16);
         EventStreams.changesOf(textArea.textProperty())
                 .filter(stringChange -> stringChange.getNewValue().length()!=0)
-                .subscribe(stringChange -> textChanged(stringChange.getNewValue()));
+                .subscribe(stringChange -> {
+                    isTextChange=true;
+                    textChanged(stringChange.getNewValue());
+                });
         EventStreams.changesOf(textArea.currentParagraphProperty())
+                .filter(integerChange -> isTextChange)
                 .map(integerChange -> {
+                    isTextChange=false;
                     if(textArea.getText().length()==0){
                         return null;
                     }
@@ -89,7 +87,9 @@ public class MarkDownEditorPane {
                         ||s.startsWith("#### ")
                         ||s.startsWith("##### ")
                         ||s.startsWith("###### ")))
-        .subscribe(s -> title.setValue(textArea.getText()));
+        .subscribe(s -> {
+            title.setValue(textArea.getText());
+        });
 
         ChangeListener<Double> scrollYListener=(observable, oldValue, newValue) -> {
             double value=textArea.estimatedScrollYProperty().getValue();

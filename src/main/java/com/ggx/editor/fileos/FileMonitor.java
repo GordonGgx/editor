@@ -50,7 +50,7 @@ public class FileMonitor implements Runnable{
                     break;
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+//                e.printStackTrace();
                 break;
             }
         }

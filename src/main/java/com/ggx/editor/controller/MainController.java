@@ -228,17 +228,12 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
             fileContainer.getChildren().remove(1);
         }
         fileContainer.getChildren().add(markDownEditorPane.getScrollPane());
-        lines=0;
         outLine.getChildren().clear();
         CompletableFuture.supplyAsync(()->{
             StringBuilder sb = new StringBuilder();
             try (BufferedReader br=new BufferedReader(new FileReader(file))){
                 CommonmarkPreviewRenderer renderer= (CommonmarkPreviewRenderer) markDownPreview.getRenderer();
-                br.lines().map(s -> s + "\n").forEach(s -> {
-                    sb.append(s);
-                    extractTitles(renderer,s,lines);
-                    lines++;
-                });
+                br.lines().map(s -> s + "\n").forEach(sb::append);
             } catch (IOException e) {
                 e.printStackTrace();
                 return "";
@@ -253,75 +248,30 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
     }
 
     private void extractTitles(CommonmarkPreviewRenderer renderer,String s,int lines){
+        StringBuilder title=new StringBuilder();
+        boolean has=false;
         if(s.startsWith("# ")){
-            renderer.update(s,null);
-            String title=HTMLTagParser.getTextByHTMLParser(renderer.getHtml());
-            Hyperlink hyperlink=new Hyperlink(title);
-            hyperlink.getStyleClass().add("test");
-            hyperlink.setUserData(""+lines);
-            hyperlink.setOnAction(event -> {
-                markDownEditorPane.jumpToLine(Integer.parseInt((String) hyperlink.getUserData()));
-                hyperlink.setVisited(false);
-            });
-            Platform.runLater(()->{
-                outLine.getChildren().add(hyperlink);
-            });
+            has=true;
         }else if(s.startsWith("## ")){
-            renderer.update(s,null);
-            String title=HTMLTagParser.getTextByHTMLParser(renderer.getHtml());
-            Hyperlink hyperlink=new Hyperlink("  "+title);
-            hyperlink.getStyleClass().add("test");
-            hyperlink.setUserData(""+lines);
-            hyperlink.setOnAction(event -> {
-                markDownEditorPane.jumpToLine(Integer.parseInt((String) hyperlink.getUserData()));
-                hyperlink.setVisited(false);
-            });
-            Platform.runLater(()->{
-                outLine.getChildren().add(hyperlink);
-            });
+            has=true;
+            title.append(" ");
         }else if(s.startsWith("### ")){
-            renderer.update(s,null);
-            String title=HTMLTagParser.getTextByHTMLParser(renderer.getHtml());
-            Hyperlink hyperlink=new Hyperlink("   "+title);
-            hyperlink.getStyleClass().add("test");
-            hyperlink.setUserData(""+lines);
-            hyperlink.setOnAction(event -> {
-                markDownEditorPane.jumpToLine(Integer.parseInt((String) hyperlink.getUserData()));
-                hyperlink.setVisited(false);
-            });
-            Platform.runLater(()->{
-                outLine.getChildren().add(hyperlink);
-            });
+            has=true;
+            title.append("  ");
         }else if(s.startsWith("#### ")){
-            renderer.update(s,null);
-            String title=HTMLTagParser.getTextByHTMLParser(renderer.getHtml());
-            Hyperlink hyperlink=new Hyperlink("    "+title);
-            hyperlink.getStyleClass().add("test");
-            hyperlink.setUserData(""+lines);
-            hyperlink.setOnAction(event -> {
-                markDownEditorPane.jumpToLine(Integer.parseInt((String) hyperlink.getUserData()));
-                hyperlink.setVisited(false);
-            });
-            Platform.runLater(()->{
-                outLine.getChildren().add(hyperlink);
-            });
+            has=true;
+            title.append("   ");
         }else if(s.startsWith("###### ")){
-            renderer.update(s,null);
-            String title=HTMLTagParser.getTextByHTMLParser(renderer.getHtml());
-            Hyperlink hyperlink=new Hyperlink("     "+title);
-            hyperlink.getStyleClass().add("test");
-            hyperlink.setUserData(""+lines);
-            hyperlink.setOnAction(event -> {
-                markDownEditorPane.jumpToLine(Integer.parseInt((String) hyperlink.getUserData()));
-                hyperlink.setVisited(false);
-            });
-            Platform.runLater(()->{
-                outLine.getChildren().add(hyperlink);
-            });
+            has=true;
+            title.append("    ");
         }else if(s.startsWith("######## ")){
+            has=true;
+            title.append("     ");
+        }
+        if(has){
             renderer.update(s,null);
-            String title=HTMLTagParser.getTextByHTMLParser(renderer.getHtml());
-            Hyperlink hyperlink=new Hyperlink("      "+title);
+            title.append(HTMLTagParser.getTextByHTMLParser(renderer.getHtml()));
+            Hyperlink hyperlink=new Hyperlink(title.toString());
             hyperlink.getStyleClass().add("test");
             hyperlink.setUserData(""+lines);
             hyperlink.setOnAction(event -> {
