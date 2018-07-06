@@ -52,6 +52,9 @@
                         </graphic>
                     </MenuItem>
                     <SeparatorMenuItem/>
+                    <MenuItem onAction="#export2HTML">
+                        <text>export2HTML</text>
+                    </MenuItem>
                     <MenuItem onAction="#exitApp">
                         <text>Exit</text>
                     </MenuItem>

@@ -33,6 +33,9 @@ public class MarkDownPreviewPane {
     private final ObjectProperty<IndexRange> editorSelection = new SimpleObjectProperty<>();
     public ObjectProperty<IndexRange> editorSelectionProperty() { return editorSelection; }
 
+    private final ObjectProperty<Path> path=new SimpleObjectProperty<>();
+    public ObjectProperty<Path> pathProperty(){return path;}
+
     public MarkDownPreviewPane(){
         previewContext=new PreviewContext() {
             @Override
@@ -42,7 +45,7 @@ public class MarkDownPreviewPane {
             @Override
             public Node getMarkdownAST() { return markdownAST.get(); }
             @Override
-            public Path getPath() { return null; }
+            public Path getPath() { return path.get(); }
             @Override
             public IndexRange getEditorSelection() { return editorSelection.get(); }
         };

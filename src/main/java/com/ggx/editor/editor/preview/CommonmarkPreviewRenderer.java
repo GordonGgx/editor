@@ -10,6 +10,7 @@ import com.vladsch.flexmark.ext.footnotes.FootnoteExtension;
 import com.vladsch.flexmark.ext.gfm.issues.GfmIssuesExtension;
 import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughSubscriptExtension;
 import com.vladsch.flexmark.ext.gfm.tasklist.TaskListExtension;
+import com.vladsch.flexmark.ext.gfm.users.GfmUsersExtension;
 import com.vladsch.flexmark.ext.jekyll.tag.JekyllTagExtension;
 import com.vladsch.flexmark.ext.tables.TablesExtension;
 import com.vladsch.flexmark.html.HtmlRenderer;
@@ -38,7 +39,7 @@ public class CommonmarkPreviewRenderer implements MarkDownPreviewPane.Renderer{
     public String getHtml() {
         if(options==null){
             options=new MutableDataSet();
-            options.setFrom(ParserEmulationProfile.MARKDOWN);
+            options.setFrom(ParserEmulationProfile.GITHUB_DOC);
             // enable table parse!
             List<Extension> extensions=new ArrayList<>();
             extensions.add(TablesExtension.create());
@@ -46,6 +47,7 @@ public class CommonmarkPreviewRenderer implements MarkDownPreviewPane.Renderer{
             extensions.add(AnchorLinkExtension.create());
             extensions.add(AttributesExtension.create());
             extensions.add(GfmIssuesExtension.create());
+            extensions.add(GfmUsersExtension.create());
             extensions.add(StrikethroughSubscriptExtension.create());
             extensions.add(TaskListExtension.create());
             extensions.add(JekyllTagExtension.create());

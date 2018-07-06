@@ -1,20 +1,18 @@
 package com.ggx.editor.editor.preview;
 
 import com.ggx.editor.utils.Resource;
-import com.sun.webkit.WebPage;
 import com.vladsch.flexmark.ast.FencedCodeBlock;
 import com.vladsch.flexmark.ast.NodeVisitor;
 import javafx.concurrent.Worker;
-import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.IndexRange;
-import javafx.scene.web.WebEvent;
 import javafx.scene.web.WebView;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -44,7 +42,6 @@ public class WebViewPreview implements MarkDownPreviewPane.Preview{
         webView.setOnDragDropped(null);
         webView.setOnDragDetected(null);
         webView.setOnDragDone(null);
-
 
         webView.getEngine().getLoadWorker().stateProperty().addListener(new HyperlinkRedirectListener(webView));
 
@@ -108,10 +105,10 @@ public class WebViewPreview implements MarkDownPreviewPane.Preview{
             lastScrollY = (scrollYobj instanceof Number) ? ((Number)scrollYobj).intValue() : 0;
         }
         lastEditorSelection=context.getEditorSelection();
-//        Path path=context.getPath();
-//        String base = (path != null)
-//                ? ("<base href=\"" + path.getParent().toUri().toString() + "\">\n")
-//                : "";
+        Path path=context.getPath();
+        String base = (path != null)
+                ? ("<base href=\"" + path.getParent().toUri().toString() + "\">\n")
+                : "";
         String scrollScript = (lastScrollX > 0 || lastScrollY > 0)
                 ? ("  onload='window.scrollTo("+lastScrollX+", "+lastScrollY+");'")
                 : "";
@@ -122,6 +119,7 @@ public class WebViewPreview implements MarkDownPreviewPane.Preview{
                         + "<html>\n"
                         + "<head>\n"
                         + "<meta charset=\"utf-8\" />"
+                        + base
                         + "<link rel=\"stylesheet\" href=\"" + Resource.getResource("css/markdownpad-github.css") + "\">\n"
                         + "<style>\n"
                         + ".mwfx-editor-selection {\n"
@@ -240,10 +238,12 @@ public class WebViewPreview implements MarkDownPreviewPane.Preview{
         }
     }
 
-    private static String trimDelim(String str, String leadingDelim, String trailingDelim) {
+    public static String trimDelim(String str, String leadingDelim, String trailingDelim) {
         str = str.trim();
         if (!str.startsWith(leadingDelim) || !str.endsWith(trailingDelim))
             throw new IllegalArgumentException(str);
         return str.substring(leadingDelim.length(), str.length() - trailingDelim.length());
     }
+
+
 }

@@ -5,19 +5,22 @@ import com.ggx.editor.editor.FooterPane;
 import com.ggx.editor.editor.MarkDownEditorPane;
 import com.ggx.editor.editor.preview.CommonmarkPreviewRenderer;
 import com.ggx.editor.editor.preview.MarkDownPreviewPane;
+import com.ggx.editor.editor.preview.WebViewPreview;
 import com.ggx.editor.editor.setting.SettingsPane;
 import com.ggx.editor.fileos.FileMonitor;
 import com.ggx.editor.interfaces.TreeListAction;
 import com.ggx.editor.options.Options;
 import com.ggx.editor.utils.FileUtil;
 import com.ggx.editor.utils.HTMLTagParser;
+import com.ggx.editor.utils.Resource;
 import com.ggx.editor.widget.TextFieldTreeCellImpl;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXDialog;
 import com.jfoenix.controls.JFXHamburger;
 import com.jfoenix.transitions.hamburger.HamburgerBackArrowBasicTransition;
+import com.vladsch.flexmark.ast.FencedCodeBlock;
+import com.vladsch.flexmark.ast.NodeVisitor;
 import javafx.application.Platform;
-import javafx.beans.binding.ObjectBinding;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -36,39 +39,68 @@ import org.reactfx.Change;
 import org.reactfx.EventStreams;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.DateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
-public class MainController  implements Initializable, TreeListAction,Runnable {
+public class MainController implements Initializable, TreeListAction, Runnable {
 
-    @FXML public StackPane root;
-    @FXML public BorderPane rootPane;
-    @FXML public TreeView<File> treeView;
-    @FXML public StackPane fileContainer;
-    @FXML public SplitPane splitePane;
-    @FXML public JFXHamburger jfxHamburger;
-    @FXML public StackPane leftBtn;
-    @FXML public Label title;
-    @FXML public BorderPane leftPane;
-    @FXML public BorderPane rightPane;
-    @FXML public ToggleGroup toggle;
-    @FXML public HBox toggleContainer;
-    @FXML public MenuItem save;
-    @FXML public JFXDialog dialog;
-    @FXML public JFXButton acceptButton;
-    @FXML public ToolBar titleBar;
-    @FXML public MenuItem findAction;
-    @FXML public BorderPane editorContainer;
-    @FXML public MenuItem pasteAction;
-    @FXML public MenuItem copyAction;
-    @FXML public MenuItem cutAction;
-    @FXML public MenuItem editorAction;
-    @FXML public MenuItem eyeAction;
-    @FXML public MenuItem previewAction;
-    @FXML public VBox outLine;
+    @FXML
+    public StackPane root;
+    @FXML
+    public BorderPane rootPane;
+    @FXML
+    public TreeView<File> treeView;
+    @FXML
+    public StackPane fileContainer;
+    @FXML
+    public SplitPane splitePane;
+    @FXML
+    public JFXHamburger jfxHamburger;
+    @FXML
+    public StackPane leftBtn;
+    @FXML
+    public Label title;
+    @FXML
+    public BorderPane leftPane;
+    @FXML
+    public BorderPane rightPane;
+    @FXML
+    public ToggleGroup toggle;
+    @FXML
+    public HBox toggleContainer;
+    @FXML
+    public MenuItem save;
+    @FXML
+    public JFXDialog dialog;
+    @FXML
+    public JFXButton acceptButton;
+    @FXML
+    public ToolBar titleBar;
+    @FXML
+    public MenuItem findAction;
+    @FXML
+    public BorderPane editorContainer;
+    @FXML
+    public MenuItem pasteAction;
+    @FXML
+    public MenuItem copyAction;
+    @FXML
+    public MenuItem cutAction;
+    @FXML
+    public MenuItem editorAction;
+    @FXML
+    public MenuItem eyeAction;
+    @FXML
+    public MenuItem previewAction;
+    @FXML
+    public VBox outLine;
 
 
     private final Image folderIcon = new Image(ClassLoader.getSystemResourceAsStream("icons/folder_16.png"));
@@ -86,19 +118,19 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        markDownPreview=new MarkDownPreviewPane();
-        markDownEditorPane=new MarkDownEditorPane(editorContainer);
-        footerPane=new FooterPane(markDownEditorPane.getTextArea());
+        markDownPreview = new MarkDownPreviewPane();
+        markDownEditorPane = new MarkDownEditorPane(editorContainer);
+        footerPane = new FooterPane(markDownEditorPane.getTextArea());
         rootPane.setBottom(footerPane.getNode());
 
 
         treeView.setShowRoot(true);
         treeView.setEditable(false);
         treeView.setCellFactory(param -> new TextFieldTreeCellImpl(this));
-        String oldFilePath=Options.getLastFilePath();
-        if(oldFilePath!=null){
-            File dir=new File(oldFilePath);
-            if(dir.exists()&&dir.isDirectory()){
+        String oldFilePath = Options.getLastFilePath();
+        if (oldFilePath != null) {
+            File dir = new File(oldFilePath);
+            if (dir.exists() && dir.isDirectory()) {
                 ImageView iv = new ImageView(folderIcon);
                 iv.setSmooth(true);
                 iv.setViewport(new Rectangle2D(0, 0, 16, 16));
@@ -126,14 +158,14 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
         markDownEditorPane.titleProperty().addListener((observable, oldValue, newValue) -> newTitle(newValue));
     }
 
-    private void newTitle(String markDown){
+    private void newTitle(String markDown) {
         outLine.getChildren().clear();
-        lines=0;
-        CompletableFuture.runAsync(()->{
-            try (BufferedReader br=new BufferedReader(new StringReader(markDown))){
-                CommonmarkPreviewRenderer renderer= (CommonmarkPreviewRenderer) markDownPreview.getRenderer();
+        lines = 0;
+        CompletableFuture.runAsync(() -> {
+            try (BufferedReader br = new BufferedReader(new StringReader(markDown))) {
+                CommonmarkPreviewRenderer renderer = (CommonmarkPreviewRenderer) markDownPreview.getRenderer();
                 br.lines().forEach(s -> {
-                    extractTitles(renderer,s,lines);
+                    extractTitles(renderer, s, lines);
                     lines++;
                 });
             } catch (IOException e) {
@@ -143,7 +175,7 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
 
     }
 
-    private void changeWidth(Change<Number> numberChange){
+    private void changeWidth(Change<Number> numberChange) {
         splitePane.setDividerPosition(0, 0.18);
         if (rightPane.getCenter() != null) {
             markDownPreview.setWidth((rootPane.getWidth() - leftPane.getWidth()) / 2);
@@ -152,7 +184,7 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
         }
     }
 
-    private void changeEditorView(Change<Toggle> toggleChange){
+    private void changeEditorView(Change<Toggle> toggleChange) {
         RadioButton rb = (RadioButton) toggleChange.getNewValue();
         switch (rb.getId()) {
             case "editor":
@@ -214,13 +246,22 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
 
     @Override
     public void openFile(File file) {
-        if(!file.exists()){
+        if (!file.exists()) {
             return;
         }
-        if(currentFile==file){
+        if (currentFile == file) {
+            return;
+        }
+        String fileName=file.getName();
+
+        if(!fileName.endsWith("txt")&&
+                !fileName.endsWith("md")&&
+                !fileName.endsWith("html")){
+            showError("暂不支持打开此文件");
             return;
         }
         currentFile = file;
+        markDownPreview.pathProperty().setValue(file.toPath());
         initOpenFile();
         changeTextType(file);
         rootPane.setCursor(Cursor.WAIT);
@@ -229,17 +270,17 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
         }
         fileContainer.getChildren().add(markDownEditorPane.getScrollPane());
         outLine.getChildren().clear();
-        CompletableFuture.supplyAsync(()->{
+        CompletableFuture.supplyAsync(() -> {
             StringBuilder sb = new StringBuilder();
-            try (BufferedReader br=new BufferedReader(new FileReader(file))){
-                CommonmarkPreviewRenderer renderer= (CommonmarkPreviewRenderer) markDownPreview.getRenderer();
+            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                CommonmarkPreviewRenderer renderer = (CommonmarkPreviewRenderer) markDownPreview.getRenderer();
                 br.lines().map(s -> s + "\n").forEach(sb::append);
             } catch (IOException e) {
                 e.printStackTrace();
                 return "";
             }
             return sb.toString();
-        }).thenAccept(s -> Platform.runLater(()-> {
+        }).thenAccept(s -> Platform.runLater(() -> {
             markDownEditorPane.setNewFileContent(s);
             markDownEditorPane.getScrollPane().scrollYToPixel(0);
             rootPane.setCursor(Cursor.DEFAULT);
@@ -247,38 +288,38 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
         }));
     }
 
-    private void extractTitles(CommonmarkPreviewRenderer renderer,String s,int lines){
-        StringBuilder title=new StringBuilder();
-        boolean has=false;
-        if(s.startsWith("# ")){
-            has=true;
-        }else if(s.startsWith("## ")){
-            has=true;
+    private void extractTitles(CommonmarkPreviewRenderer renderer, String s, int lines) {
+        StringBuilder title = new StringBuilder();
+        boolean has = false;
+        if (s.startsWith("# ")) {
+            has = true;
+        } else if (s.startsWith("## ")) {
+            has = true;
             title.append(" ");
-        }else if(s.startsWith("### ")){
-            has=true;
+        } else if (s.startsWith("### ")) {
+            has = true;
             title.append("  ");
-        }else if(s.startsWith("#### ")){
-            has=true;
+        } else if (s.startsWith("#### ")) {
+            has = true;
             title.append("   ");
-        }else if(s.startsWith("###### ")){
-            has=true;
+        } else if (s.startsWith("###### ")) {
+            has = true;
             title.append("    ");
-        }else if(s.startsWith("######## ")){
-            has=true;
+        } else if (s.startsWith("######## ")) {
+            has = true;
             title.append("     ");
         }
-        if(has){
-            renderer.update(s,null);
+        if (has) {
+            renderer.update(s, null);
             title.append(HTMLTagParser.getTextByHTMLParser(renderer.getHtml()));
-            Hyperlink hyperlink=new Hyperlink(title.toString());
+            Hyperlink hyperlink = new Hyperlink(title.toString());
             hyperlink.getStyleClass().add("test");
-            hyperlink.setUserData(""+lines);
+            hyperlink.setUserData("" + lines);
             hyperlink.setOnAction(event -> {
                 markDownEditorPane.jumpToLine(Integer.parseInt((String) hyperlink.getUserData()));
                 hyperlink.setVisited(false);
             });
-            Platform.runLater(()->{
+            Platform.runLater(() -> {
                 outLine.getChildren().add(hyperlink);
             });
         }
@@ -326,9 +367,9 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
 
     @FXML
     public void openDir() {
-        DirectoryChooser chooser=new DirectoryChooser();
-        File dir=chooser.showDialog(Main.get());
-        if(dir!=null&&dir.exists()){
+        DirectoryChooser chooser = new DirectoryChooser();
+        File dir = chooser.showDialog(Main.get());
+        if (dir != null && dir.exists()) {
             Options.setLastFilePath(dir.getAbsolutePath());
             clear();
             ImageView iv = new ImageView(folderIcon);
@@ -348,11 +389,11 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
 
     @FXML
     public void createDir() {
-        FileChooser fileChooser=new FileChooser();
+        FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save dir");
-        File dir=fileChooser.showSaveDialog(Main.get());
-        if(!dir.exists()){
-            if(dir.mkdir()){
+        File dir = fileChooser.showSaveDialog(Main.get());
+        if (!dir.exists()) {
+            if (dir.mkdir()) {
                 System.out.println("创建成功");
                 Options.setLastFilePath(dir.getAbsolutePath());
                 FileMonitor.get().addWatchFile(dir);
@@ -363,8 +404,8 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
                 TreeItem<File> rootTree = new TreeItem<>(dir, iv);
                 treeView.setShowRoot(true);
                 treeView.setRoot(rootTree);
-            }else {
-                Alert error=new Alert(Alert.AlertType.ERROR);
+            } else {
+                Alert error = new Alert(Alert.AlertType.ERROR);
                 error.setContentText("工作空间创建失败.");
                 error.initOwner(Main.get());
                 error.show();
@@ -374,7 +415,7 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
 
     @FXML
     public void exitApp() {
-        if(currentFile!=null&&currentFile.exists()){
+        if (currentFile != null && currentFile.exists()) {
             markDownEditorPane.saveFile(currentFile);
         }
         Main.get().close();
@@ -390,11 +431,12 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
 
     @FXML
     public void onSaveAction() {
-        if(currentFile!=null&&currentFile.exists()){
+        if (currentFile != null && currentFile.exists()) {
             markDownEditorPane.saveFile(currentFile);
         }
     }
-    private void initOpenFile(){
+
+    private void initOpenFile() {
         save.setDisable(false);
         findAction.setDisable(false);
         cutAction.setDisable(false);
@@ -410,7 +452,7 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
         footerPane.showTextType(true);
     }
 
-    private void deleteFileAction(){
+    private void deleteFileAction() {
         save.setDisable(true);
         findAction.setDisable(true);
         cutAction.setDisable(true);
@@ -427,17 +469,17 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
     }
 
     //关闭面板并清理一些东西
-    private void clear(){
+    private void clear() {
         if (fileContainer.getChildren().size() == 2) {
             fileContainer.getChildren().remove(1);
         }
-        currentFile=null;
+        currentFile = null;
         deleteFileAction();
         title.setText(null);
         title.setGraphic(null);
     }
 
-    private void changeTextType(File file){
+    private void changeTextType(File file) {
         footerPane.setTextType(FooterPane.TextType.None);
         title.setText(FileUtil.prefixName(file) + " " + DateFormat.getDateInstance(DateFormat.DEFAULT, Locale.CHINESE).format(file.lastModified()));
         if (file.getName().endsWith(".md")) {
@@ -451,7 +493,7 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
 
     @FXML
     public void openFind() {
-        if(currentFile==null){
+        if (currentFile == null) {
             return;
         }
         markDownEditorPane.showFindPane();
@@ -459,7 +501,7 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
 
     @FXML
     public void changeEditor() {
-        if(currentFile==null){
+        if (currentFile == null) {
             return;
         }
         toggle.selectToggle(toggle.getToggles().get(0));
@@ -467,7 +509,7 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
 
     @FXML
     public void changeEye() {
-        if(currentFile==null){
+        if (currentFile == null) {
             return;
         }
         toggle.selectToggle(toggle.getToggles().get(1));
@@ -475,7 +517,7 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
 
     @FXML
     public void changePreview() {
-        if(currentFile==null){
+        if (currentFile == null) {
             return;
         }
         toggle.selectToggle(toggle.getToggles().get(2));
@@ -483,8 +525,8 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
 
     @FXML
     public void openSettings() {
-        if(settingsPane==null){
-            settingsPane=new SettingsPane();
+        if (settingsPane == null) {
+            settingsPane = new SettingsPane();
         }
         settingsPane.showSettings();
 
@@ -492,7 +534,7 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
 
     @FXML
     public void onCut() {
-        if(currentFile==null){
+        if (currentFile == null) {
             return;
         }
         markDownEditorPane.getTextArea().cut();
@@ -500,7 +542,7 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
 
     @FXML
     public void onCopy() {
-        if(currentFile==null){
+        if (currentFile == null) {
             return;
         }
         markDownEditorPane.getTextArea().copy();
@@ -508,7 +550,7 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
 
     @FXML
     public void onPaste() {
-        if(currentFile==null){
+        if (currentFile == null) {
             return;
         }
         markDownEditorPane.getTextArea().paste();
@@ -517,14 +559,14 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
 
     @Override
     public void run() {
-        TreeItem<File> rootTree=treeView.getRoot();
-        File dir=rootTree.getValue();
+        TreeItem<File> rootTree = treeView.getRoot();
+        File dir = rootTree.getValue();
         ImageView iv = new ImageView(folderIcon);
         iv.setSmooth(true);
         iv.setViewport(new Rectangle2D(0, 0, 16, 16));
         TreeItem<File> root = new TreeItem<>(dir, iv);
         searchFile(dir, root);
-        Platform.runLater(()->{
+        Platform.runLater(() -> {
             treeView.setRoot(root);
             root.setExpanded(true);
         });
@@ -536,7 +578,7 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
 
     @FXML
     public void onCatalog() {
-        if(treeView.isVisible()){
+        if (treeView.isVisible()) {
             return;
         }
         outLine.setManaged(false);
@@ -548,11 +590,197 @@ public class MainController  implements Initializable, TreeListAction,Runnable {
     @FXML
     public void onOutLine() {
 
-        if(!outLine.isVisible()){
+        if (!outLine.isVisible()) {
             treeView.setManaged(false);
             treeView.setVisible(false);
             outLine.setManaged(true);
             outLine.setVisible(true);
         }
+    }
+
+    @FXML
+    public void export2HTML(ActionEvent actionEvent) throws IOException {
+        if (currentFile == null) {
+            return;
+        }
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("Save HTML");
+        File dir = directoryChooser.showDialog(Main.get());
+        if (dir == null) {
+            return;
+        }
+        if (!dir.exists()) {
+            boolean res = dir.createNewFile();
+            if (!res) {
+                showError("文件夹创建失败");
+                return;
+            }
+        }
+        rootPane.setCursor(Cursor.WAIT);
+        //导出并保存文件
+        CompletableFuture.runAsync(() -> {
+            //创建css文件
+            File copyCssDir = new File(dir, "css");
+            copyCssDir.mkdirs();
+            File cssFile=new File(copyCssDir,"markdownpad-github.css");
+            if(cssFile.exists()){
+                cssFile.delete();
+            }
+            try (InputStream cssStream = Resource.getResource("css/markdownpad-github.css").openStream()){
+                Files.copy(cssStream, cssFile.toPath());
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
+
+            //导出js文件
+            try {
+                File jsDir = new File(Resource.getResource("js").toURI());
+                FileUtil.copy(jsDir,dir);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            String name = currentFile.getName();
+            File htmlFile=new File(dir,name.substring(0, name.lastIndexOf(".")) + ".html");
+            if(!htmlFile.exists()){
+                try {
+                    boolean res=htmlFile.createNewFile();
+                    if(!res){
+                        showError("html文件创建失败");
+                        return;
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            String text = markDownEditorPane.getMarkDownText();
+            CommonmarkPreviewRenderer renderer = (CommonmarkPreviewRenderer) markDownPreview.getRenderer();
+            renderer.update(text, null);
+            String content = renderer.getHtml();
+            //提取imgs
+            File imgDir=new File(dir,"images");
+            imgDir.mkdirs();
+            List<String> imgs=HTMLTagParser.getImageTag(content);
+
+            for (String img:imgs){
+                String src=HTMLTagParser.getSingleImageSrc(img);
+                if(src.isEmpty()||src.startsWith("http://")||src.startsWith("https://")){
+                    continue;
+                }
+                File imgFile=new File(currentFile.toPath().getParent().toFile(),src);
+                if(!imgFile.exists()){
+                    continue;
+                }
+                //把这个图片文件copy到相应目录下
+                try {
+                    File copyFile=new File(imgDir,imgFile.getName());
+                    if(!copyFile.exists()){
+                        Files.copy(imgFile.toPath(),copyFile.toPath());
+                    }
+                    content=content.replace(src,"./images/"+imgFile.getName());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            String html = "<!DOCTYPE html>\n"
+                    + "<html>\n"
+                    + "<head>\n"
+                    + "<meta charset=\"utf-8\" />"
+                    +"<title>"+htmlFile.getName()+"</title>"
+                    + "<link rel=\"stylesheet\" href=\"./css/markdownpad-github.css\">\n"
+                    + "<style>\n"
+                    + ".mwfx-editor-selection {\n"
+                    + "  border-right: 5px solid #f47806;\n"
+                    + "  margin-right: -5px;\n"
+                    + "  background-color: rgb(253, 247, 241);\n"
+                    + "}\n"
+                    + "</style>\n"
+                    + "<script src=\"./js/preview.js\"></script>\n"
+                    + prismSyntaxHighlighting(markDownEditorPane.getMarkDownAST())
+                    + "</head>\n"
+                    + "<body>\n"
+                    + content
+                    + "<script>preview.highlightNodesAt("+content.length()+");</script>\n"
+                    + "</body>\n"
+                    + "</html>";
+            try (FileWriter writer = new FileWriter(htmlFile)) {
+                writer.write(html);
+                writer.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).thenAccept(aVoid -> rootPane.setCursor(Cursor.DEFAULT));
+
+
+    }
+
+    private void showError(String content){
+        Alert error = new Alert(Alert.AlertType.ERROR);
+        error.setContentText(content);
+        error.show();
+    }
+
+    private String prismSyntaxHighlighting(com.vladsch.flexmark.ast.Node astRoot) {
+        HashMap<String, String> prismLangDependenciesMap = new HashMap<>();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                Resource.getResAsStream("js/prism/lang_dependencies.txt"))))
+        {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (!line.startsWith("{"))
+                    continue;
+
+                line = line.replaceAll("(\\[.+),(.+\\])", "$1;$2");
+                line = WebViewPreview.trimDelim(line, "{", "}");
+                for (String str : line.split(",")) {
+                    String[] parts = str.split(":");
+                    if (parts[1].startsWith("["))
+                        continue; // not supported
+
+                    String key = WebViewPreview.trimDelim(parts[0], "\"", "\"");
+                    String value = WebViewPreview.trimDelim(parts[1], "\"", "\"");
+                    prismLangDependenciesMap.put(key, value);
+                }
+            }
+        } catch (IOException e) {
+            // ignore
+        }
+
+        // check whether markdown contains fenced code blocks and remember languages
+        ArrayList<String> languages = new ArrayList<>();
+        NodeVisitor visitor = new NodeVisitor(Collections.emptyList()) {
+            @Override
+            public void visit(com.vladsch.flexmark.ast.Node node) {
+                if (node instanceof FencedCodeBlock) {
+                    String language = ((FencedCodeBlock)node).getInfo().toString();
+                    if (language.contains(language))
+                        languages.add(language);
+
+                    // dependencies
+                    while ((language = prismLangDependenciesMap.get(language)) != null) {
+                        if (language.contains(language))
+                            languages.add(0, language); // dependencies must be loaded first
+                    }
+                } else
+                    visitChildren(node);
+            }
+        };
+        visitor.visit(astRoot);
+
+        if (languages.isEmpty())
+            return "";
+
+        // build HTML (only load used languages)
+        // Note: not using Prism Autoloader plugin because it lazy loads/highlights, which causes flicker
+        //       during fast typing; it also does not work with "alias" languages (e.g. js, html, xml, svg, ...)
+        StringBuilder buf = new StringBuilder();
+        buf.append("<link rel=\"stylesheet\" href=\"").append(Resource.getResource("js/prism/prism.css")).append("\">\n");
+        buf.append("<script src=\"").append(Resource.getResource("js/prism/prism-core.min.js")).append("\"></script>\n");
+        for (String language : languages) {
+            URL url = Resource.getResource("js/prism/components/prism-"+language+".min.js");
+            if (url != null)
+                buf.append("<script src=\"").append(url).append("\"></script>\n");
+        }
+        return buf.toString();
     }
 }
