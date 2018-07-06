@@ -601,6 +601,7 @@ public class MainController implements Initializable, TreeListAction, Runnable {
     @FXML
     public void export2HTML(ActionEvent actionEvent) throws IOException {
         if (currentFile == null) {
+            showError("请选择并打开一个要导出md文件");
             return;
         }
         DirectoryChooser directoryChooser = new DirectoryChooser();
