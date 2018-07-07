@@ -113,34 +113,33 @@ public class WebViewPreview implements MarkDownPreviewPane.Preview{
                 ? ("  onload='window.scrollTo("+lastScrollX+", "+lastScrollY+");'")
                 : "";
         String content=renderer.getHtml();
-        StringBuilder html=new StringBuilder();
-        html.append("<!DOCTYPE html>\n");
-        html.append("<html>\n");
-        html.append("<head>\n");
-        html.append("<meta charset=\"utf-8\" />\n");
-        html.append(base);
-        html.append("<link rel=\"stylesheet\" href=\"")
-                .append(Resource.getResource("css/markdownpad-github.css"))
-                .append("\">\n");
-        html.append("<style>\n");
-        html.append(".mwfx-editor-selection {\n");
-        html.append("  border-right: 5px solid #f47806;\n");
-        html.append("  margin-right: -5px;\n");
-        html.append("  background-color: rgb(253, 247, 241);\n");
-        html.append("}\n");
-        html.append("</style>\n");
-        html.append("<script src=\"")
-                .append(Resource.getResource("js/preview.js"))
-                .append("\"></script>\n");
-        html.append(prismSyntaxHighlighting(context.getMarkdownAST()));
-        html.append("</head>\n");
-        html.append("<body").append(scrollScript).append(">\n");
-        html.append(content);
-        html.append("<script>\n");
-        html.append("<script>").append(highlightNodesAt(lastEditorSelection)).append("</script>\n");
-        html.append("</body>\n");
-        html.append("</html>");
-        webView.getEngine().loadContent(html.toString());
+        String html = "<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "<head>\n" +
+                "<meta charset=\"utf-8\" />\n" +
+                base +
+                "<link rel=\"stylesheet\" href=\"" +
+                Resource.getResource("css/markdownpad-github.css") +
+                "\">\n" +
+                "<style>\n" +
+                ".mwfx-editor-selection {\n" +
+                "  border-right: 5px solid #f47806;\n" +
+                "  margin-right: -5px;\n" +
+                "  background-color: rgb(253, 247, 241);\n" +
+                "}\n" +
+                "</style>\n" +
+                "<script src=\"" +
+                Resource.getResource("js/preview.js") +
+                "\"></script>\n" +
+                prismSyntaxHighlighting(context.getMarkdownAST()) +
+                "</head>\n" +
+                "<body" + scrollScript + ">\n" +
+                content +
+                "<script>\n" +
+                "<script>" + highlightNodesAt(lastEditorSelection) + "</script>\n" +
+                "</body>\n" +
+                "</html>";
+        webView.getEngine().loadContent(html);
     }
 
     /**
