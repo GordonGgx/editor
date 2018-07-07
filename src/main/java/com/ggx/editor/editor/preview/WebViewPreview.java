@@ -112,32 +112,35 @@ public class WebViewPreview implements MarkDownPreviewPane.Preview{
         String scrollScript = (lastScrollX > 0 || lastScrollY > 0)
                 ? ("  onload='window.scrollTo("+lastScrollX+", "+lastScrollY+");'")
                 : "";
-        String html=renderer.getHtml();
-
-        webView.getEngine().loadContent(
-                "<!DOCTYPE html>\n"
-                        + "<html>\n"
-                        + "<head>\n"
-                        + "<meta charset=\"utf-8\" />"
-                        + base
-                        + "<link rel=\"stylesheet\" href=\"" + Resource.getResource("css/markdownpad-github.css") + "\">\n"
-                        + "<style>\n"
-                        + ".mwfx-editor-selection {\n"
-                        + "  border-right: 5px solid #f47806;\n"
-                        + "  margin-right: -5px;\n"
-                        + "  background-color: rgb(253, 247, 241);\n"
-                        + "}\n"
-                        + "</style>\n"
-                        + "<script src=\"" + Resource.getResource("js/preview.js") + "\"></script>\n"
-                        + prismSyntaxHighlighting(context.getMarkdownAST())
-                        /*+ base*/
-                        + "</head>\n"
-                        + "<body" + scrollScript + ">\n"
-                        + html
-                        + "<script>" + highlightNodesAt(lastEditorSelection) + "</script>\n"
-                        + "</body>\n"
-                        + "</html>"
-        );
+        String content=renderer.getHtml();
+        StringBuilder html=new StringBuilder();
+        html.append("<!DOCTYPE html>\n");
+        html.append("<html>\n");
+        html.append("<head>\n");
+        html.append("<meta charset=\"utf-8\" />\n");
+        html.append(base);
+        html.append("<link rel=\"stylesheet\" href=\"")
+                .append(Resource.getResource("css/markdownpad-github.css"))
+                .append("\">\n");
+        html.append("<style>\n");
+        html.append(".mwfx-editor-selection {\n");
+        html.append("  border-right: 5px solid #f47806;\n");
+        html.append("  margin-right: -5px;\n");
+        html.append("  background-color: rgb(253, 247, 241);\n");
+        html.append("}\n");
+        html.append("</style>\n");
+        html.append("<script src=\"")
+                .append(Resource.getResource("js/preview.js"))
+                .append("\"></script>\n");
+        html.append(prismSyntaxHighlighting(context.getMarkdownAST()));
+        html.append("</head>\n");
+        html.append("<body").append(scrollScript).append(">\n");
+        html.append(content);
+        html.append("<script>\n");
+        html.append("<script>").append(highlightNodesAt(lastEditorSelection)).append("</script>\n");
+        html.append("</body>\n");
+        html.append("</html>");
+        webView.getEngine().loadContent(html.toString());
     }
 
     /**
@@ -165,7 +168,7 @@ public class WebViewPreview implements MarkDownPreviewPane.Preview{
         return "preview.highlightNodesAt(" + range.getEnd() + ")";
     }
 
-    private String prismSyntaxHighlighting(com.vladsch.flexmark.ast.Node astRoot) {
+    public static String prismSyntaxHighlighting(com.vladsch.flexmark.ast.Node astRoot) {
         initPrismLangDependencies();
 
         // check whether markdown contains fenced code blocks and remember languages
@@ -192,9 +195,8 @@ public class WebViewPreview implements MarkDownPreviewPane.Preview{
         if (languages.isEmpty())
             return "";
 
-        // build HTML (only load used languages)
-        // Note: not using Prism Autoloader plugin because it lazy loads/highlights, which causes flicker
-        //       during fast typing; it also does not work with "alias" languages (e.g. js, html, xml, svg, ...)
+        //在构建html的时候只使用用到的语言插件，这里不使用prism的自动载入插件因为他们是延迟加载的会导致快速打字的时候出现
+        //闪烁的情况
         StringBuilder buf = new StringBuilder();
         buf.append("<link rel=\"stylesheet\" href=\"").append(Resource.getResource("js/prism/prism.css")).append("\">\n");
         buf.append("<script src=\"").append(Resource.getResource("js/prism/prism-core.min.js")).append("\"></script>\n");
@@ -207,7 +209,7 @@ public class WebViewPreview implements MarkDownPreviewPane.Preview{
     }
 
     /**
-     * load and parse prism/lang_dependencies.txt
+     * 载入并解析 prism/lang_dependencies.txt
      */
     private static void initPrismLangDependencies() {
         if (!prismLangDependenciesMap.isEmpty())
@@ -233,8 +235,7 @@ public class WebViewPreview implements MarkDownPreviewPane.Preview{
                     prismLangDependenciesMap.put(key, value);
                 }
             }
-        } catch (IOException e) {
-            // ignore
+        } catch (IOException ignored) {
         }
     }
 

@@ -683,29 +683,36 @@ public class MainController implements Initializable, TreeListAction, Runnable {
                     e.printStackTrace();
                 }
             }
-            String html = "<!DOCTYPE html>\n"
-                    + "<html>\n"
-                    + "<head>\n"
-                    + "<meta charset=\"utf-8\" />"
-                    +"<title>"+htmlFile.getName()+"</title>"
-                    + "<link rel=\"stylesheet\" href=\"./css/markdownpad-github.css\">\n"
-                    + "<style>\n"
-                    + ".mwfx-editor-selection {\n"
-                    + "  border-right: 5px solid #f47806;\n"
-                    + "  margin-right: -5px;\n"
-                    + "  background-color: rgb(253, 247, 241);\n"
-                    + "}\n"
-                    + "</style>\n"
-                    + "<script src=\"./js/preview.js\"></script>\n"
-                    + prismSyntaxHighlighting(markDownEditorPane.getMarkDownAST())
-                    + "</head>\n"
-                    + "<body>\n"
-                    + content
-                    + "<script>preview.highlightNodesAt("+content.length()+");</script>\n"
-                    + "</body>\n"
-                    + "</html>";
+            StringBuilder html=new StringBuilder();
+            html.append("<!DOCTYPE html>\n");
+            html.append("<html>\n");
+            html.append("<head>\n");
+            html.append("<meta charset=\"utf-8\" />\n");
+            html.append("<title>");
+            html.append(htmlFile.getName());
+            html.append("</title>\n");
+            html.append("<link rel=\"stylesheet\" href=\"./css/markdownpad-github.css\">\n");
+            html.append("<style>\n");
+            html.append(".mwfx-editor-selection {\n");
+            html.append("  border-right: 5px solid #f47806;\n");
+            html.append("  margin-right: -5px;\n");
+            html.append("  background-color: rgb(253, 247, 241);\n");
+            html.append("}\n");
+            html.append("</style>\n");
+            html.append("<script src=\"./js/preview.js\"></script>\n");
+            html.append(WebViewPreview.prismSyntaxHighlighting(markDownEditorPane.getMarkDownAST()));
+            html.append("</head>\n");
+            html.append("<body>\n");
+            html.append(content);
+            html.append("<script>\n");
+            html.append("preview.highlightNodesAt(")
+                    .append(content.length())
+                    .append(");\n");
+            html.append("</script>\n");
+            html.append("</body>\n");
+            html.append("</html>");
             try (FileWriter writer = new FileWriter(htmlFile)) {
-                writer.write(html);
+                writer.write(html.toString());
                 writer.flush();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -719,69 +726,5 @@ public class MainController implements Initializable, TreeListAction, Runnable {
         Alert error = new Alert(Alert.AlertType.ERROR);
         error.setContentText(content);
         error.show();
-    }
-
-    private String prismSyntaxHighlighting(com.vladsch.flexmark.ast.Node astRoot) {
-        HashMap<String, String> prismLangDependenciesMap = new HashMap<>();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                Resource.getResAsStream("js/prism/lang_dependencies.txt"))))
-        {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (!line.startsWith("{"))
-                    continue;
-
-                line = line.replaceAll("(\\[.+),(.+\\])", "$1;$2");
-                line = WebViewPreview.trimDelim(line, "{", "}");
-                for (String str : line.split(",")) {
-                    String[] parts = str.split(":");
-                    if (parts[1].startsWith("["))
-                        continue; // not supported
-
-                    String key = WebViewPreview.trimDelim(parts[0], "\"", "\"");
-                    String value = WebViewPreview.trimDelim(parts[1], "\"", "\"");
-                    prismLangDependenciesMap.put(key, value);
-                }
-            }
-        } catch (IOException e) {
-            // ignore
-        }
-
-        // check whether markdown contains fenced code blocks and remember languages
-        ArrayList<String> languages = new ArrayList<>();
-        NodeVisitor visitor = new NodeVisitor(Collections.emptyList()) {
-            @Override
-            public void visit(com.vladsch.flexmark.ast.Node node) {
-                if (node instanceof FencedCodeBlock) {
-                    String language = ((FencedCodeBlock)node).getInfo().toString();
-                    if (language.contains(language))
-                        languages.add(language);
-
-                    // dependencies
-                    while ((language = prismLangDependenciesMap.get(language)) != null) {
-                        if (language.contains(language))
-                            languages.add(0, language); // dependencies must be loaded first
-                    }
-                } else
-                    visitChildren(node);
-            }
-        };
-        visitor.visit(astRoot);
-
-        if (languages.isEmpty())
-            return "";
-
-        // build HTML (only load used languages)
-        // Note: not using Prism Autoloader plugin because it lazy loads/highlights, which causes flicker
-        //       during fast typing; it also does not work with "alias" languages (e.g. js, html, xml, svg, ...)
-        StringBuilder buf = new StringBuilder();
-        buf.append("<link rel=\"stylesheet\" href=\"").append(Resource.getResource("js/prism/prism.css")).append("\">\n");
-        buf.append("<script src=\"").append(Resource.getResource("js/prism/prism-core.min.js")).append("\"></script>\n");
-        for (String language : languages) {
-            URL url = Resource.getResource("js/prism/components/prism-"+language+".min.js");
-            if (url != null)
-                buf.append("<script src=\"").append(url).append("\"></script>\n");
-        }
-        return buf.toString();
     }
 }
