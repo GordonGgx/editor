@@ -11,6 +11,7 @@
 * 文件树结构目录层次
 * 编辑，预览，编辑/预览切换
 * 文章标题大纲
+* MarkdownToHTML
 * 支持Windows,Linux,MacOs
 
 ### TODO ###
