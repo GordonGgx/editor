@@ -1,5 +1,5 @@
 /.idea
-
+*.iml
 /build
 /out
 /richtextfx/build
