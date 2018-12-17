@@ -1,4 +1,4 @@
-package com.ggx.editor.markdown;
+package com.ggx.editor.keyword;
 
 import javafx.concurrent.Task;
 import org.fxmisc.richtext.CodeArea;

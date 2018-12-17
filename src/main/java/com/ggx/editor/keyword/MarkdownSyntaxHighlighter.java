@@ -1,4 +1,4 @@
-package com.ggx.editor.markdown;
+package com.ggx.editor.keyword;
 
 import com.ggx.editor.utils.Range;
 import com.vladsch.flexmark.ast.*;
@@ -12,7 +12,6 @@ import com.vladsch.flexmark.ext.wikilink.WikiLink;
 import com.vladsch.flexmark.util.sequence.BasedSequence;
 import javafx.application.Platform;
 import org.fxmisc.richtext.CodeArea;
-import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.Paragraph;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;

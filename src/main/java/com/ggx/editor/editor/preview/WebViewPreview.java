@@ -170,7 +170,7 @@ public class WebViewPreview implements MarkDownPreviewPane.Preview{
     public static String prismSyntaxHighlighting(com.vladsch.flexmark.ast.Node astRoot) {
         initPrismLangDependencies();
 
-        // check whether markdown contains fenced code blocks and remember languages
+        // check whether keyword contains fenced code blocks and remember languages
         ArrayList<String> languages = new ArrayList<>();
         NodeVisitor visitor = new NodeVisitor(Collections.emptyList()) {
             @Override

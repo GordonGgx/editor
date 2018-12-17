@@ -1,6 +1,6 @@
 package com.ggx.editor.editor;
 
-import com.ggx.editor.markdown.MarkdownSyntaxHighlighter;
+import com.ggx.editor.keyword.MarkdownSyntaxHighlighter;
 import com.vladsch.flexmark.Extension;
 import com.vladsch.flexmark.ast.Node;
 import com.vladsch.flexmark.ext.anchorlink.AnchorLinkExtension;
@@ -57,7 +57,7 @@ public class MarkDownEditorPane {
         textArea=new CodeArea();
         textArea.setWrapText(true);
         textArea.setUseInitialStyleForInsertion(true);
-        textArea.getStyleClass().add("markdown-editor");
+        textArea.getStyleClass().add("keyword-editor");
         textArea.getStylesheets().add("css/MarkdownEditor.css");
         textArea.getStylesheets().add("css/prism.css");
         textArea.setParagraphGraphicFactory(LineNumberFactory.get(textArea));

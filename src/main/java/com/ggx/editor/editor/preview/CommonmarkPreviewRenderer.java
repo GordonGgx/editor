@@ -11,6 +11,7 @@ import com.vladsch.flexmark.ext.gfm.issues.GfmIssuesExtension;
 import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughSubscriptExtension;
 import com.vladsch.flexmark.ext.gfm.tasklist.TaskListExtension;
 import com.vladsch.flexmark.ext.gfm.users.GfmUsersExtension;
+import com.vladsch.flexmark.ext.gitlab.GitLabExtension;
 import com.vladsch.flexmark.ext.jekyll.tag.JekyllTagExtension;
 import com.vladsch.flexmark.ext.tables.TablesExtension;
 import com.vladsch.flexmark.html.HtmlRenderer;
@@ -52,8 +53,10 @@ public class CommonmarkPreviewRenderer implements MarkDownPreviewPane.Renderer{
             extensions.add(TaskListExtension.create());
             extensions.add(JekyllTagExtension.create());
             extensions.add(AsideExtension.create());
+            extensions.add(GitLabExtension.create());
             options.set(HtmlRenderer.GENERATE_HEADER_ID,true);
             options.set(Parser.EXTENSIONS, extensions);
+
         }
 
         Parser parser=Parser.builder(options).build();
