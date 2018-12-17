@@ -29,9 +29,9 @@ repositories {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 //    compile project(':richtextfx')
-    compile group: 'org.fxmisc.richtext', name: 'richtextfx', version: '0.9.0'
+    compile group: 'org.fxmisc.richtext', name: 'richtextfx', version: '0.9.2'
     compile 'com.jfoenix:jfoenix:8.0.4'
-    def flexmarkVersion = '0.32.18'
+    def flexmarkVersion = '0.35.0'
     compile 'com.vladsch.flexmark:flexmark-all:' + flexmarkVersion
 //    compile 'com.vladsch.flexmark:flexmark-util:' + flexmarkVersion
 //    compile 'com.vladsch.flexmark:flexmark-ext-tables:' + flexmarkVersion
