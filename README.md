@@ -1,5 +1,7 @@
 # FxMarkdownEditor #
 
+**时隔多年，一直忙碌在温饱的奔波，该项目也就搁置了，最近有想法重新捡起来，继续完善此项目，等空下来将会有一场大的变革**
+
 使用JavaFx编写的开源Markdown编辑器，代码用于学习和分享使用。
 
 ![fxMarkdownEditor snapshot](snapshot.png)
